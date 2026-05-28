@@ -467,7 +467,7 @@ body {
 
 .stat-label {
     font-size: 0.85rem;
-    color: var(--text-dim);
+    color: var(--text-muted);
 }
 
 .hero-actions {
