@@ -454,396 +454,396 @@ let articles = [];
 let pendingFile = null;
 let articlesFilter = '';
 
- // ---- Категории статей из MODULES ----
- function getArticleCategories() {
-     if (typeof MODULES !== 'undefined' && Array.isArray(MODULES)) {
-         return MODULES.map(m => m.title);
-     }
-     return [];
- }
+// ---- Категории статей из MODULES ----
+function getArticleCategories() {
+    if (typeof MODULES !== 'undefined' && Array.isArray(MODULES)) {
+        return MODULES.map(m => m.title);
+    }
+    return [];
+}
 
- // ---- Инициализация админ-формы ----
- function initAdminForm() {
-     if (!adminCategory) return;
-     const cats = getArticleCategories();
-     adminCategory.innerHTML = '<option value="">— Выберите категорию —</option>';
-     cats.forEach(c => {
-         const opt = document.createElement('option');
-         opt.value = c;
-         opt.textContent = c;
-         adminCategory.appendChild(opt);
-     });
- }
+// ---- Инициализация админ-формы ----
+function initAdminForm() {
+    if (!adminCategory) return;
+    const cats = getArticleCategories();
+    adminCategory.innerHTML = '<option value="">— Выберите категорию —</option>';
+    cats.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        adminCategory.appendChild(opt);
+    });
+}
 
- // ---- Загрузить статьи из localStorage ----
- function loadArticles() {
-     try {
-         // Удаляем старый ключ со статическими статьями, если остался
-         localStorage.removeItem('mStaticArticles');
-         const saved = localStorage.getItem('mArticles');
-         if (saved) {
-             articles = JSON.parse(saved);
-             // Если есть статьи со static-флагом — чистим их (пережиток статической эпохи)
-             articles = articles.filter(a => !a.static);
-             saveArticles();
-         } else {
-             articles = [];
-         }
-     } catch(e) {
-         articles = [];
-     }
- }
+// ---- Загрузить статьи из localStorage ----
+function loadArticles() {
+    try {
+        // Удаляем старый ключ со статическими статьями, если остался
+        localStorage.removeItem('mStaticArticles');
+        const saved = localStorage.getItem('mArticles');
+        if (saved) {
+            articles = JSON.parse(saved);
+            // Если есть статьи со static-флагом — чистим их (пережиток статической эпохи)
+            articles = articles.filter(a => !a.static);
+            saveArticles();
+        } else {
+            articles = [];
+        }
+    } catch(e) {
+        articles = [];
+    }
+}
 
- // ---- Сохранить статьи ----
- function saveArticles() {
-     try {
-         localStorage.setItem('mArticles', JSON.stringify(articles));
-     } catch(e) {
-         if (e.name === 'QuotaExceededError' || e.code === 22) {
-             while (articles.length > 0) {
-                 articles.shift();
-                 try {
-                     localStorage.setItem('mArticles', JSON.stringify(articles));
-                     break;
-                 } catch(e2) { continue; }
-             }
-         }
-     }
- }
+// ---- Сохранить статьи ----
+function saveArticles() {
+    try {
+        localStorage.setItem('mArticles', JSON.stringify(articles));
+    } catch(e) {
+        if (e.name === 'QuotaExceededError' || e.code === 22) {
+            while (articles.length > 0) {
+                articles.shift();
+                try {
+                    localStorage.setItem('mArticles', JSON.stringify(articles));
+                    break;
+                } catch(e2) { continue; }
+            }
+        }
+    }
+}
 
- // ---- Форматирование даты ----
- function formatDate() {
-     const d = new Date();
-     const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
- }
+// ---- Форматирование даты ----
+function formatDate() {
+    const d = new Date();
+    const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
 
- // ---- Экранирование HTML ----
- function escHtml(str) {
-     const div = document.createElement('div');
-     div.textContent = str;
-     return div.innerHTML;
- }
+// ---- Экранирование HTML ----
+function escHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
 
- // ---- Рендер фильтров категорий ----
- function renderArticleFilters() {
-     if (!articleFilters) return;
-     const cats = getArticleCategories();
-     if (cats.length === 0) {
-         articleFilters.style.display = 'none';
-         return;
-     }
-     articleFilters.style.display = 'flex';
-     let html = `<button class="article-filter${articlesFilter === '' ? ' active' : ''}" data-category="">Все</button>`;
-     cats.forEach(c => {
-         const count = articles.filter(a => a.category === c).length;
-         if (count > 0) {
-             html += `<button class="article-filter${articlesFilter === c ? ' active' : ''}" data-category="${escHtml(c)}">${escHtml(c)} (${count})</button>`;
-         }
-     });
-     articleFilters.innerHTML = html;
-     articleFilters.querySelectorAll('.article-filter').forEach(btn => {
-         btn.addEventListener('click', () => {
-             articlesFilter = btn.dataset.category;
-             renderArticleFilters();
-             renderArticles();
-         });
-     });
- }
+// ---- Рендер фильтров категорий ----
+function renderArticleFilters() {
+    if (!articleFilters) return;
+    const cats = getArticleCategories();
+    if (cats.length === 0) {
+        articleFilters.style.display = 'none';
+        return;
+    }
+    articleFilters.style.display = 'flex';
+    let html = `<button class="article-filter${articlesFilter === '' ? ' active' : ''}" data-category="">Все</button>`;
+    cats.forEach(c => {
+        const count = articles.filter(a => a.category === c).length;
+        if (count > 0) {
+            html += `<button class="article-filter${articlesFilter === c ? ' active' : ''}" data-category="${escHtml(c)}">${escHtml(c)} (${count})</button>`;
+        }
+    });
+    articleFilters.innerHTML = html;
+    articleFilters.querySelectorAll('.article-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+            articlesFilter = btn.dataset.category;
+            renderArticleFilters();
+            renderArticles();
+        });
+    });
+}
 
- // ---- Рендер статей ----
- function renderArticles() {
-     if (!articlesGrid || !articlesEmpty) return;
-     articlesGrid.innerHTML = '';
+// ---- Рендер статей ----
+function renderArticles() {
+    if (!articlesGrid || !articlesEmpty) return;
+    articlesGrid.innerHTML = '';
 
-     let filtered = articles;
-     if (articlesFilter) {
-         filtered = articles.filter(a => a.category === articlesFilter);
-     }
+    let filtered = articles;
+    if (articlesFilter) {
+        filtered = articles.filter(a => a.category === articlesFilter);
+    }
 
-     if (filtered.length === 0) {
-         articlesEmpty.classList.remove('hidden');
-         return;
-     }
-     articlesEmpty.classList.add('hidden');
+    if (filtered.length === 0) {
+        articlesEmpty.classList.remove('hidden');
+        return;
+    }
+    articlesEmpty.classList.add('hidden');
 
-     // От новых к старым
-     const sorted = [...filtered].reverse();
-     sorted.forEach((art, displayIdx) => {
-         const realIdx = articles.indexOf(art);
-         const card = document.createElement('div');
-         card.className = 'article-card';
-         const preview = (art.content || '').replace(/<[^>]*>/g, '').substring(0, 150);
-         const showDelete = adminMode;
+    // От новых к старым
+    const sorted = [...filtered].reverse();
+    sorted.forEach((art, displayIdx) => {
+        const realIdx = articles.indexOf(art);
+        const card = document.createElement('div');
+        card.className = 'article-card';
+        const preview = (art.content || '').replace(/<[^>]*>/g, '').substring(0, 150);
+        const showDelete = adminMode;
 
-         card.innerHTML = `
-             <span class="article-type">${escHtml(art.type || 'TXT')}</span>
-             ${showDelete ? `<button class="article-delete visible" data-index="${realIdx}" aria-label="Удалить статью">✕</button>` : ''}
-             <h3>${escHtml(art.title)}</h3>
-             <div class="article-date">
-                 ${art.category ? `<span class="article-category-tag">${escHtml(art.category)}</span>` : ''}
-                 ${art.date || ''}
-             </div>
-             <div class="article-preview">${escHtml(preview)}</div>
-         `;
-         card.addEventListener('click', (e) => {
-             if (e.target.closest('.article-delete')) return;
-             openArticle(realIdx);
-         });
-         const delBtn = card.querySelector('.article-delete');
-         if (delBtn) {
-             delBtn.addEventListener('click', (e) => {
-                 e.stopPropagation();
-                 deleteArticle(realIdx);
-             });
-         }
-         articlesGrid.appendChild(card);
-     });
- }
+        card.innerHTML = `
+            <span class="article-type">${escHtml(art.type || 'TXT')}</span>
+            ${showDelete ? `<button class="article-delete visible" data-index="${realIdx}" aria-label="Удалить статью">✕</button>` : ''}
+            <h3>${escHtml(art.title)}</h3>
+            <div class="article-date">
+                ${art.category ? `<span class="article-category-tag">${escHtml(art.category)}</span>` : ''}
+                ${art.date || ''}
+            </div>
+            <div class="article-preview">${escHtml(preview)}</div>
+        `;
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.article-delete')) return;
+            openArticle(realIdx);
+        });
+        const delBtn = card.querySelector('.article-delete');
+        if (delBtn) {
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteArticle(realIdx);
+            });
+        }
+        articlesGrid.appendChild(card);
+    });
+}
 
- // ---- Удалить статью ----
- function deleteArticle(idx) {
-     if (idx < 0 || idx >= articles.length) return;
-     articles.splice(idx, 1);
-     saveArticles();
-     renderArticles();
-     renderArticleFilters();
- }
+// ---- Удалить статью ----
+function deleteArticle(idx) {
+    if (idx < 0 || idx >= articles.length) return;
+    articles.splice(idx, 1);
+    saveArticles();
+    renderArticles();
+    renderArticleFilters();
+}
 
- // ---- Открыть статью (модал) ----
- function openArticle(idx) {
-     const art = articles[idx];
-     if (!art) return;
+// ---- Открыть статью (модал) ----
+function openArticle(idx) {
+    const art = articles[idx];
+    if (!art) return;
 
-     const overlay = document.createElement('div');
-     overlay.className = 'modal-overlay active';
-     overlay.style.display = 'flex';
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay active';
+    overlay.style.display = 'flex';
 
-     let contentHtml = '';
-     if (art.type === 'PDF') {
-         contentHtml = `<div style="width:100%;height:80vh;border-radius:12px;overflow:hidden;">
-             <iframe src="${art.blobUrl || ''}" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
-         </div>`;
-     } else {
-         contentHtml = `<div class="article-viewer-content">${art.content || ''}</div>`;
-     }
+    let contentHtml = '';
+    if (art.type === 'PDF') {
+        contentHtml = `<div style="width:100%;height:80vh;border-radius:12px;overflow:hidden;">
+            <iframe src="${art.blobUrl || ''}" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
+        </div>`;
+    } else {
+        contentHtml = `<div class="article-viewer-content">${art.content || ''}</div>`;
+    }
 
-     overlay.innerHTML = `
-         <div class="modal article-viewer" style="max-width:800px;">
-             <div class="article-viewer-header">
-                 <h2>${escHtml(art.title)}</h2>
-                 <button class="modal-close" aria-label="Закрыть">&times;</button>
-             </div>
-             ${art.category ? `<div style="padding:8px 28px 0;font-size:0.8rem;color:var(--text-muted);">Категория: ${escHtml(art.category)}</div>` : ''}
-             ${contentHtml}
-         </div>
-     `;
+    overlay.innerHTML = `
+        <div class="modal article-viewer" style="max-width:800px;">
+            <div class="article-viewer-header">
+                <h2>${escHtml(art.title)}</h2>
+                <button class="modal-close" aria-label="Закрыть">&times;</button>
+            </div>
+            ${art.category ? `<div style="padding:8px 28px 0;font-size:0.8rem;color:var(--text-muted);">Категория: ${escHtml(art.category)}</div>` : ''}
+            ${contentHtml}
+        </div>
+    `;
 
-     document.body.appendChild(overlay);
-     document.body.style.overflow = 'hidden';
-     requestAnimationFrame(() => overlay.style.opacity = '1');
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => overlay.style.opacity = '1');
 
-     overlay.querySelector('.modal-close').addEventListener('click', () => {
-         overlay.remove();
-         document.body.style.overflow = '';
-     });
-     overlay.addEventListener('click', (e) => {
-         if (e.target === overlay) {
-             overlay.remove();
-             document.body.style.overflow = '';
-         }
-     });
-     document.addEventListener('keydown', function handler(e) {
-         if (e.key === 'Escape') {
-             overlay.remove();
-             document.body.style.overflow = '';
-             document.removeEventListener('keydown', handler);
-         }
-     });
- }
+    overlay.querySelector('.modal-close').addEventListener('click', () => {
+        overlay.remove();
+        document.body.style.overflow = '';
+    });
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            overlay.remove();
+            document.body.style.overflow = '';
+        }
+    });
+    document.addEventListener('keydown', function handler(e) {
+        if (e.key === 'Escape') {
+            overlay.remove();
+            document.body.style.overflow = '';
+            document.removeEventListener('keydown', handler);
+        }
+    });
+}
 
- // ---- Чтение файла и возврат данных ----
- function readArticleFile(file) {
-     return new Promise((resolve, reject) => {
-         const maxSize = 10 * 1024 * 1024;
-         if (file.size > maxSize) {
-             reject(new Error('Файл слишком большой. Максимум 10MB.'));
-             return;
-         }
-         const ext = file.name.split('.').pop().toLowerCase();
-         const reader = new FileReader();
+// ---- Чтение файла и возврат данных ----
+function readArticleFile(file) {
+    return new Promise((resolve, reject) => {
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            reject(new Error('Файл слишком большой. Максимум 10MB.'));
+            return;
+        }
+        const ext = file.name.split('.').pop().toLowerCase();
+        const reader = new FileReader();
 
-         if (ext === 'pdf') {
-             reader.onload = function(e) {
-                 resolve({
-                     type: 'PDF',
-                     content: '',
-                     blobUrl: URL.createObjectURL(file),
-                     base64: e.target.result
-                 });
-             };
-             reader.onerror = () => reject(new Error('Ошибка чтения файла'));
-             reader.readAsDataURL(file);
-         } else if (ext === 'html' || ext === 'htm') {
-             reader.onload = function(e) {
-                 let content = e.target.result;
-                 content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
-                 resolve({
-                     type: 'HTML',
-                     content: content
-                 });
-             };
-             reader.onerror = () => reject(new Error('Ошибка чтения файла'));
-             reader.readAsText(file, 'UTF-8');
-         } else {
-             // TXT и прочее
-             reader.onload = function(e) {
-                 let content = e.target.result;
-                 content = content
-                     .replace(/&/g, '&amp;')
-                     .replace(/</g, '&lt;')
-                     .replace(/>/g, '&gt;')
-                     .replace(/"/g, '&quot;')
-                     .replace(/'/g, '&#039;');
-                 content = content.replace(/\n/g, '<br>');
-                 resolve({
-                     type: 'TXT',
-                     content: content
-                 });
-             };
-             reader.onerror = () => reject(new Error('Ошибка чтения файла'));
-             reader.readAsText(file, 'UTF-8');
-         }
-     });
- }
+        if (ext === 'pdf') {
+            reader.onload = function(e) {
+                resolve({
+                    type: 'PDF',
+                    content: '',
+                    blobUrl: URL.createObjectURL(file),
+                    base64: e.target.result
+                });
+            };
+            reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+            reader.readAsDataURL(file);
+        } else if (ext === 'html' || ext === 'htm') {
+            reader.onload = function(e) {
+                let content = e.target.result;
+                content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
+                resolve({
+                    type: 'HTML',
+                    content: content
+                });
+            };
+            reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+            reader.readAsText(file, 'UTF-8');
+        } else {
+            // TXT и прочее
+            reader.onload = function(e) {
+                let content = e.target.result;
+                content = content
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+                content = content.replace(/\n/g, '<br>');
+                resolve({
+                    type: 'TXT',
+                    content: content
+                });
+            };
+            reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+            reader.readAsText(file, 'UTF-8');
+        }
+    });
+}
 
- // ---- Публикация статьи ----
- async function publishArticle() {
-     const category = adminCategory.value;
-     const title = adminTitle.value.trim();
-     if (!category) { setAdminStatus('Выберите категорию', 'error'); return; }
-     if (!title) { setAdminStatus('Введите название', 'error'); return; }
-     if (!pendingFile) { setAdminStatus('Выберите файл', 'error'); return; }
+// ---- Публикация статьи ----
+async function publishArticle() {
+    const category = adminCategory.value;
+    const title = adminTitle.value.trim();
+    if (!category) { setAdminStatus('Выберите категорию', 'error'); return; }
+    if (!title) { setAdminStatus('Введите название', 'error'); return; }
+    if (!pendingFile) { setAdminStatus('Выберите файл', 'error'); return; }
 
-     adminSaveBtn.disabled = true;
-     setAdminStatus('Обработка...', '');
+    adminSaveBtn.disabled = true;
+    setAdminStatus('Обработка...', '');
 
-     try {
-         const fileData = await readArticleFile(pendingFile);
+    try {
+        const fileData = await readArticleFile(pendingFile);
 
-         // Если HTML/TXT — используем название из файла, если есть
-         let finalTitle = title;
-         if (fileData.type === 'HTML') {
-             const titleMatch = fileData.content.match(/<title[^>]*>([^<]*)<\/title>/i);
-             if (titleMatch) finalTitle = titleMatch[1].trim();
-         } else if (fileData.type === 'TXT' && !finalTitle) {
-             finalTitle = pendingFile.name.replace(/\.[^/.]+$/, '');
-         }
+        // Если HTML/TXT — используем название из файла, если есть
+        let finalTitle = title;
+        if (fileData.type === 'HTML') {
+            const titleMatch = fileData.content.match(/<title[^>]*>([^<]*)<\/title>/i);
+            if (titleMatch) finalTitle = titleMatch[1].trim();
+        } else if (fileData.type === 'TXT' && !finalTitle) {
+            finalTitle = pendingFile.name.replace(/\.[^/.]+$/, '');
+        }
 
-         articles.push({
-             title: finalTitle,
-             category: category,
-             type: fileData.type,
-             content: fileData.content,
-             blobUrl: fileData.blobUrl || null,
-             base64: fileData.base64 || null,
-             date: formatDate()
-         });
+        articles.push({
+            title: finalTitle,
+            category: category,
+            type: fileData.type,
+            content: fileData.content,
+            blobUrl: fileData.blobUrl || null,
+            base64: fileData.base64 || null,
+            date: formatDate()
+        });
 
-         saveArticles();
-         resetAdminForm();
-         renderArticles();
-         renderArticleFilters();
-         setAdminStatus('✅ Опубликовано!', 'success');
-     } catch (err) {
-         setAdminStatus('❌ ' + err.message, 'error');
-     }
+        saveArticles();
+        resetAdminForm();
+        renderArticles();
+        renderArticleFilters();
+        setAdminStatus('✅ Опубликовано!', 'success');
+    } catch (err) {
+        setAdminStatus('❌ ' + err.message, 'error');
+    }
 
-     adminSaveBtn.disabled = false;
- }
+    adminSaveBtn.disabled = false;
+}
 
- function setAdminStatus(msg, cls) {
-     if (!adminStatus) return;
-     adminStatus.textContent = msg;
-     adminStatus.className = 'admin-status' + (cls ? ' ' + cls : '');
- }
+function setAdminStatus(msg, cls) {
+    if (!adminStatus) return;
+    adminStatus.textContent = msg;
+    adminStatus.className = 'admin-status' + (cls ? ' ' + cls : '');
+}
 
- function resetAdminForm() {
-     if (adminCategory) adminCategory.value = '';
-     if (adminTitle) adminTitle.value = '';
-     pendingFile = null;
-     if (adminFilePreview) adminFilePreview.style.display = 'none';
-     if (adminFileInput) adminFileInput.value = '';
-     if (adminSaveBtn) adminSaveBtn.disabled = true;
-     setAdminStatus('', '');
- }
+function resetAdminForm() {
+    if (adminCategory) adminCategory.value = '';
+    if (adminTitle) adminTitle.value = '';
+    pendingFile = null;
+    if (adminFilePreview) adminFilePreview.style.display = 'none';
+    if (adminFileInput) adminFileInput.value = '';
+    if (adminSaveBtn) adminSaveBtn.disabled = true;
+    setAdminStatus('', '');
+}
 
- // ---- События админ-панели ----
+// ---- События админ-панели ----
 
- // Выбор файла через кнопку
- if (adminDropzone) {
-     adminDropzone.addEventListener('click', () => {
-         if (adminFileInput) adminFileInput.click();
-     });
+// Выбор файла через кнопку
+if (adminDropzone) {
+    adminDropzone.addEventListener('click', () => {
+        if (adminFileInput) adminFileInput.click();
+    });
 
-     adminDropzone.addEventListener('dragover', (e) => {
-         e.preventDefault();
-         adminDropzone.classList.add('dragover');
-     });
-     adminDropzone.addEventListener('dragleave', () => {
-         adminDropzone.classList.remove('dragover');
-     });
-     adminDropzone.addEventListener('drop', (e) => {
-         e.preventDefault();
-         adminDropzone.classList.remove('dragover');
-         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-             setPendingFile(e.dataTransfer.files[0]);
-         }
-     });
- }
+    adminDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        adminDropzone.classList.add('dragover');
+    });
+    adminDropzone.addEventListener('dragleave', () => {
+        adminDropzone.classList.remove('dragover');
+    });
+    adminDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        adminDropzone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setPendingFile(e.dataTransfer.files[0]);
+        }
+    });
+}
 
- if (adminFileInput) {
-     adminFileInput.addEventListener('change', function() {
-         if (this.files && this.files[0]) {
-             setPendingFile(this.files[0]);
-         }
-     });
- }
+if (adminFileInput) {
+    adminFileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            setPendingFile(this.files[0]);
+        }
+    });
+}
 
- if (adminFileRemove) {
-     adminFileRemove.addEventListener('click', () => {
-         pendingFile = null;
-         if (adminFilePreview) adminFilePreview.style.display = 'none';
-         if (adminFileInput) adminFileInput.value = '';
-         updateSaveBtn();
-     });
- }
+if (adminFileRemove) {
+    adminFileRemove.addEventListener('click', () => {
+        pendingFile = null;
+        if (adminFilePreview) adminFilePreview.style.display = 'none';
+        if (adminFileInput) adminFileInput.value = '';
+        updateSaveBtn();
+    });
+}
 
- function setPendingFile(file) {
-     pendingFile = file;
-     if (adminFileName) adminFileName.textContent = file.name;
-     if (adminFileSize) {
-         const size = file.size > 1024 * 1024
-             ? (file.size / 1024 / 1024).toFixed(1) + ' MB'
-             : (file.size / 1024).toFixed(0) + ' KB';
-         adminFileSize.textContent = size;
-     }
-     if (adminFilePreview) adminFilePreview.style.display = 'flex';
-     updateSaveBtn();
- }
+function setPendingFile(file) {
+    pendingFile = file;
+    if (adminFileName) adminFileName.textContent = file.name;
+    if (adminFileSize) {
+        const size = file.size > 1024 * 1024
+            ? (file.size / 1024 / 1024).toFixed(1) + ' MB'
+            : (file.size / 1024).toFixed(0) + ' KB';
+        adminFileSize.textContent = size;
+    }
+    if (adminFilePreview) adminFilePreview.style.display = 'flex';
+    updateSaveBtn();
+}
 
- function updateSaveBtn() {
-     if (!adminSaveBtn) return;
-     const ok = adminCategory.value && adminTitle.value.trim() && pendingFile;
-     adminSaveBtn.disabled = !ok;
- }
+function updateSaveBtn() {
+    if (!adminSaveBtn) return;
+    const ok = adminCategory.value && adminTitle.value.trim() && pendingFile;
+    adminSaveBtn.disabled = !ok;
+}
 
- if (adminCategory) adminCategory.addEventListener('change', updateSaveBtn);
- if (adminTitle) adminTitle.addEventListener('input', updateSaveBtn);
+if (adminCategory) adminCategory.addEventListener('change', updateSaveBtn);
+if (adminTitle) adminTitle.addEventListener('input', updateSaveBtn);
 
- if (adminSaveBtn) {
-     adminSaveBtn.addEventListener('click', publishArticle);
- }
+if (adminSaveBtn) {
+    adminSaveBtn.addEventListener('click', publishArticle);
+}
 
 // ====================================================================
 // СЧЁТЧИКИ

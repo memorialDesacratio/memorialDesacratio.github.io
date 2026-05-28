@@ -48,7 +48,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" as="style">
-    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="style.css?v=2" as="style">
 
     <!-- Preload фонов (WebP, CSS fallback на JPEG) -->
     <link rel="preload" href="assets/images/bg-dark-desktop.webp" as="image" media="(min-width: 1024px) and (prefers-color-scheme: dark)" type="image/webp">
@@ -431,10 +431,5 @@
 
     <script src="data.js?v=2"></script>
     <script src="script.js?v=2"></script>
-    <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(function(){});
-    }
-    </script>
 </body>
 </html>
