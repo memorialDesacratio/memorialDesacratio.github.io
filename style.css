@@ -1953,7 +1953,22 @@ body.light-mode .search-highlight {
     
     .articles-grid { grid-template-columns: 1fr; }
     .articles { padding: 60px 0; }
-    .admin-panel-inner { flex-direction: column; text-align: center; gap: 12px; }
+    
+    /* Админ-панель на мобильных */
+    .admin-panel-inner { padding: 20px; }
+    .admin-form { max-width: 100%; }
+    .admin-dropzone { padding: 18px; }
+    .admin-actions { flex-direction: column; align-items: stretch; }
+    .admin-btn { width: 100%; justify-content: center; text-align: center; }
+    .admin-status { text-align: center; }
+    
+    .article-viewer { max-height: 90vh; max-height: 90dvh; }
+    .article-viewer .article-viewer-header { padding: 18px 20px 12px; flex-wrap: wrap; }
+    .article-viewer .article-viewer-header h2 { font-size: 1.1rem; }
+    .article-viewer .article-viewer-content { padding: 18px 20px; }
+    
+    .article-filters { gap: 6px; }
+    .article-filter { font-size: 0.78rem; padding: 5px 12px; }
 }
 
 @media (max-width: 480px) {
@@ -1974,9 +1989,22 @@ body.light-mode .search-highlight {
     .contact { padding: 60px 0; }
     .articles { padding: 60px 0; }
     .articles-grid { grid-template-columns: 1fr; }
-    .article-card { padding: 16px; }
-    .upload-btn { padding: 10px 20px; font-size: 0.85rem; }
-    .admin-panel-inner { padding: 16px; gap: 10px; }
+    .article-card { padding: 14px; }
+    .article-card h3 { font-size: 0.9rem; }
+    .article-preview { -webkit-line-clamp: 2; }
+    
+    /* Админка на маленьких экранах */
+    .admin-panel-inner { padding: 16px; }
+    .admin-field select,
+    .admin-field input[type="text"] { font-size: 0.85rem; padding: 8px 12px; }
+    .admin-dropzone { padding: 14px; }
+    .dropzone-icon { font-size: 1.5rem; }
+    .dropzone-placeholder span:nth-child(2) { font-size: 0.82rem; }
+    .admin-btn { padding: 8px 18px; font-size: 0.82rem; }
+    
+    .article-viewer .article-viewer-header { padding: 14px 16px 10px; }
+    .article-viewer .article-viewer-header h2 { font-size: 1rem; }
+    .article-viewer .article-viewer-content { padding: 14px 16px; font-size: 0.88rem; }
 }
 
 /* iPhone X+ notch / Dynamic Island */

@@ -433,31 +433,26 @@ if (searchInput) {
 }
 
 // ====================================================================
-// СТАТЬИ — загрузка, хранение, просмотр
+// СТАТЬИ
 // ====================================================================
- // ====================================================================
- // СТАТЬИ
- // ====================================================================
 
- const articlesGrid = document.getElementById('articlesGrid');
- const articlesEmpty = document.getElementById('articlesEmpty');
+const articlesGrid = document.getElementById('articlesGrid');
+const articlesEmpty = document.getElementById('articlesEmpty');
+const adminCategory = document.getElementById('adminCategory');
+const adminTitle = document.getElementById('adminTitle');
+const adminDropzone = document.getElementById('adminDropzone');
+const adminFileInput = document.getElementById('adminFileInput');
+const adminFilePreview = document.getElementById('adminFilePreview');
+const adminFileName = document.getElementById('adminFileName');
+const adminFileSize = document.getElementById('adminFileSize');
+const adminFileRemove = document.getElementById('adminFileRemove');
+const adminSaveBtn = document.getElementById('adminSaveBtn');
+const adminStatus = document.getElementById('adminStatus');
+const articleFilters = document.getElementById('articleFilters');
 
- // Админ-панель
- const adminCategory = document.getElementById('adminCategory');
- const adminTitle = document.getElementById('adminTitle');
- const adminDropzone = document.getElementById('adminDropzone');
- const adminFileInput = document.getElementById('adminFileInput');
- const adminFilePreview = document.getElementById('adminFilePreview');
- const adminFileName = document.getElementById('adminFileName');
- const adminFileSize = document.getElementById('adminFileSize');
- const adminFileRemove = document.getElementById('adminFileRemove');
- const adminSaveBtn = document.getElementById('adminSaveBtn');
- const adminStatus = document.getElementById('adminStatus');
- const articleFilters = document.getElementById('articleFilters');
-
- let articles = [];
- let pendingFile = null; // файл до публикации
- let articlesFilter = ''; // текущий выбранный фильтр категории
+let articles = [];
+let pendingFile = null;
+let articlesFilter = '';
 
  // ---- Категории статей из MODULES ----
  function getArticleCategories() {
@@ -483,9 +478,17 @@ if (searchInput) {
  // ---- Загрузить статьи из localStorage ----
  function loadArticles() {
      try {
+         // Удаляем старый ключ со статическими статьями, если остался
+         localStorage.removeItem('mStaticArticles');
          const saved = localStorage.getItem('mArticles');
-         if (saved) articles = JSON.parse(saved);
-         else articles = [];
+         if (saved) {
+             articles = JSON.parse(saved);
+             // Если есть статьи со static-флагом — чистим их (пережиток статической эпохи)
+             articles = articles.filter(a => !a.static);
+             saveArticles();
+         } else {
+             articles = [];
+         }
      } catch(e) {
          articles = [];
      }
@@ -1082,6 +1085,25 @@ loadArticles();
 renderArticles();
 renderArticleFilters();
 if (adminMode) updateAdminUI();
+
+// Сервис-воркер: обновляемся без спроса
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js?v=2').then(reg => {
+        reg.addEventListener('updatefound', () => {
+            const newSW = reg.installing;
+            newSW.addEventListener('statechange', () => {
+                if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Новая версия есть — обновляемся сразу
+                    newSW.postMessage({ action: 'skipWaiting' });
+                }
+            });
+        });
+    }).catch(() => {});
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) { refreshing = true; window.location.reload(); }
+    });
+}
 
 console.log('%c CyberDesacratio ', 'background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 18px; padding: 10px 20px; border-radius: 8px; font-weight: bold;');
 console.log('%c In Cyberspace We Trust ', 'color: #667eea; font-size: 13px;');
