@@ -44,7 +44,6 @@ html {
     --badge-color: #667eea;
     --tag-color: #667eea;
     --particle-color: 255,255,255;
-    --hero-overlay: rgba(0,0,0,0.55);
     --scrollbar-bg: #0a0a0f;
     --scrollbar-thumb: #333;
     --selection: rgba(102,126,234,0.4);
@@ -83,7 +82,6 @@ body.light-mode {
     --badge-color: #667eea;
     --tag-color: #667eea;
     --particle-color: 0,0,0;
-    --hero-overlay: rgba(255,255,255,0.3);
     --scrollbar-bg: #f0f0f8;
     --scrollbar-thumb: #ccc;
     --selection: rgba(102,126,234,0.2);
@@ -149,7 +147,7 @@ body {
     height: 100%;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.45;
+    opacity: 0.6;
     transition: opacity 0.3s;
 }
 
@@ -298,16 +296,6 @@ body {
     overflow: hidden;
 }
 
-.hero-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--hero-overlay);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 0;
-    transition: background 0.4s;
-}
-
 .hero .container {
     position: relative;
     z-index: 1;
@@ -337,6 +325,7 @@ body {
     line-height: 1.1;
     margin-bottom: 16px;
     color: var(--text);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
 }
 
 .hero-subtitle {
@@ -353,6 +342,7 @@ body {
     max-width: 550px;
     margin-bottom: 32px;
     line-height: 1.7;
+    text-shadow: 0 1px 12px rgba(0,0,0,0.2);
 }
 
 .hero-stats {
@@ -436,7 +426,8 @@ body {
     padding: 32px 24px;
     text-align: center;
     transition: all 0.3s;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .about-card:hover {
@@ -588,7 +579,16 @@ body {
     font-size: 0.9rem;
     color: var(--text-muted);
     line-height: 1.5;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+}
+
+.card-count {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    margin-bottom: 8px;
 }
 
 .card-tag {

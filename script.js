@@ -106,9 +106,9 @@ const counterObserver = new IntersectionObserver((entries) => {
         if (entry.isIntersecting) {
             const el = entry.target;
             const id = el.id;
-            if (id === 'articlesCount') animateCounter(el, 12, '+');
-            if (id === 'projectsCount') animateCounter(el, 9, '+');
-            if (id === 'expYears') animateCounter(el, 2, '+');
+            if (id === 'articlesCount') animateCounter(el, 100, '+');
+            if (id === 'projectsCount') animateCounter(el, 25, '+');
+            if (id === 'expYears') animateCounter(el, 3, '+');
             counterObserver.unobserve(el);
         }
     }
