@@ -6,13 +6,15 @@
 
 // ========== МИГРАЦИЯ ВЕРСИИ (сброс старого кэша) ==========
 (function() {
-    const CURRENT_VERSION = 2;
+    const CURRENT_VERSION = 3;
     const savedVersion = parseInt(localStorage.getItem('mVersion'), 10);
     if (!savedVersion || savedVersion < CURRENT_VERSION) {
         // При обновлении сайта — чистим старые данные
         localStorage.removeItem('mArticles');
         localStorage.removeItem('mTheme');
-        // Не сбрасываем mAdminMode — пользователь не должен терять доступ
+        localStorage.removeItem('mAdminMode');
+        localStorage.removeItem('mFilter');
+        localStorage.removeItem('mStaticArticles');
         localStorage.setItem('mVersion', String(CURRENT_VERSION));
     }
 })();
@@ -1105,22 +1107,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
     e.stopPropagation();
 });
 
-// Сервис-воркер: обновляемся без спроса
+// Уничтожаем старые сервис-воркеры и кэши — они мешали обновлениям
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js?v=2').then(reg => {
-        reg.addEventListener('updatefound', () => {
-            const newSW = reg.installing;
-            newSW.addEventListener('statechange', () => {
-                if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                    // Новая версия есть — обновляемся сразу
-                    newSW.postMessage({ action: 'skipWaiting' });
-                }
-            });
-        });
-    }).catch(() => {});
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) { refreshing = true; window.location.reload(); }
+    navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(reg => reg.unregister());
+    });
+}
+if ('caches' in window) {
+    caches.keys().then(keys => {
+        keys.forEach(key => caches.delete(key));
     });
 }
 
