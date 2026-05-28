@@ -1121,17 +1121,5 @@ window.addEventListener('beforeinstallprompt', (e) => {
     e.stopPropagation();
 });
 
-// Уничтожаем старые сервис-воркеры и кэши — они мешали обновлениям
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(reg => reg.unregister());
-    });
-}
-if ('caches' in window) {
-    caches.keys().then(keys => {
-        keys.forEach(key => caches.delete(key));
-    });
-}
-
 console.log('%c CyberDesacratio ', 'background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 18px; padding: 10px 20px; border-radius: 8px; font-weight: bold;');
 console.log('%c In Cyberspace We Trust ', 'color: #667eea; font-size: 13px;');

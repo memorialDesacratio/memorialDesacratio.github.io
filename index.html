@@ -11,13 +11,15 @@
     <meta name="author" content="CyberDesacratio">
     <meta name="robots" content="index, follow">
 
-    <!-- Убиваем PWA/SW до загрузки всего остального -->
+    <!-- Регистрация стабильного Service Worker -->
     <script>
+        // Блокируем браузерный диалог установки PWA
         window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); e.stopPropagation(); });
+        // Регистрируем лёгкий SW, который никогда не меняется, чтобы браузер не показывал
+        // «Подтвердите действие» при каждом обновлении
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(r) { r.forEach(function(r2) { r2.unregister(); }); });
+            navigator.serviceWorker.register('sw.js');
         }
-        if ('caches' in window) { caches.keys().then(function(k) { k.forEach(function(k2) { caches.delete(k2); }); }); }
     </script>
 
     <!-- Favicon -->
