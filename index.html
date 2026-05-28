@@ -286,43 +286,47 @@
     <!-- ===== ARTICLES ===== -->
     <section class="articles" id="articles" aria-label="Статьи">
         <div class="container">
-            <h2 class="section-title" id="articlesTitle">📝 <span class="highlight">Статьи</span></h2>
+            <div class="articles-header">
+                <h2 class="section-title" id="articlesTitle">📝 <span class="highlight">Статьи</span></h2>
+                <button class="articles-admin-toggle" id="adminToggleBtn" aria-label="Управление статьями">⚙️ Управление</button>
+            </div>
             <p class="section-subtitle">
                 Статьи, руководства и заметки по OSINT, пентестингу, программированию и Linux.
-                Чтобы предложить тему — <a href="#contact" style="color:var(--accent);text-decoration:underline;">напиши мне</a>.
             </p>
 
-            <!-- Админ-панель (двойной клик по заголовку чтобы показать/скрыть) -->
+            <!-- Админ-панель (скрыта, показать кнопкой Управление) -->
             <div class="admin-panel" id="adminPanel" style="display:none;">
                 <div class="admin-panel-inner">
-                    <span class="admin-badge">🔐 Админ-панель</span>
+                    <div class="admin-header">
+                        <span class="admin-badge">🔐 Админ-панель</span>
+                        <button class="admin-close" id="adminCloseBtn" type="button" aria-label="Закрыть">✕</button>
+                    </div>
 
                     <div class="admin-form">
-                        <!-- Категория -->
-                        <div class="admin-field">
-                            <label for="adminCategory">Категория</label>
-                            <select id="adminCategory">
-                                <option value="">— Выберите категорию —</option>
-                            </select>
+                        <div class="admin-row">
+                            <div class="admin-field">
+                                <label for="adminCategory">Категория</label>
+                                <select id="adminCategory">
+                                    <option value="">— Выберите категорию —</option>
+                                </select>
+                            </div>
+                            <div class="admin-field">
+                                <label for="adminTitle">Название статьи</label>
+                                <input type="text" id="adminTitle" placeholder="Введите название...">
+                            </div>
                         </div>
 
-                        <!-- Название -->
-                        <div class="admin-field">
-                            <label for="adminTitle">Название статьи</label>
-                            <input type="text" id="adminTitle" placeholder="Введите название...">
-                        </div>
-
-                        <!-- Файл -->
                         <div class="admin-field">
                             <label>Файл с содержимым</label>
                             <div class="admin-dropzone" id="adminDropzone">
                                 <input type="file" id="adminFileInput" accept=".txt,.html,.htm,.pdf" hidden>
                                 <div class="dropzone-placeholder">
                                     <span class="dropzone-icon">📄</span>
-                                    <span>Нажми или перетащи файл</span>
+                                    <span>Нажми или перетащи файл сюда</span>
                                     <span class="dropzone-hint">TXT · HTML · PDF · до 10MB</span>
                                 </div>
                                 <div class="dropzone-preview" id="adminFilePreview" style="display:none;">
+                                    <span class="preview-icon">📎</span>
                                     <span class="preview-name" id="adminFileName"></span>
                                     <span class="preview-size" id="adminFileSize"></span>
                                     <button class="preview-remove" id="adminFileRemove" type="button">✕</button>
@@ -330,7 +334,6 @@
                             </div>
                         </div>
 
-                        <!-- Кнопки -->
                         <div class="admin-actions">
                             <button class="admin-btn admin-btn-primary" id="adminSaveBtn" disabled>💾 Опубликовать</button>
                             <span class="admin-status" id="adminStatus"></span>
@@ -339,7 +342,7 @@
                 </div>
             </div>
 
-            <!-- Фильтр по категориям статей -->
+            <!-- Фильтр по категориям -->
             <div class="article-filters" id="articleFilters" style="display:none;">
                 <button class="article-filter active" data-category="">Все</button>
             </div>

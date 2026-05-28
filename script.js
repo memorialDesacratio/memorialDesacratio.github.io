@@ -1067,26 +1067,41 @@ if (backToTop) {
     });
 }
 
-// ========== АДМИН-ПАНЕЛЬ (двойной клик по заголовку статей) ==========
+// ========== АДМИН-ПАНЕЛЬ (кнопка + двойной клик) ==========
 const articlesTitle = document.getElementById('articlesTitle');
 const adminPanel = document.getElementById('adminPanel');
-let adminMode = localStorage.getItem('mAdminMode') === 'true';
+const adminToggleBtn = document.getElementById('adminToggleBtn');
+const adminCloseBtn = document.getElementById('adminCloseBtn');
+let adminMode = false; // По умолчанию скрыта
 
-function updateAdminUI() {
+function toggleAdminPanel(show) {
+    adminMode = show !== undefined ? show : !adminMode;
     if (!adminPanel) return;
     adminPanel.style.display = adminMode ? 'block' : 'none';
-    // При первом открытии — инициализируем форму с категориями
+    if (adminToggleBtn) {
+        adminToggleBtn.textContent = adminMode ? '🔒 Закрыть' : '⚙️ Управление';
+        adminToggleBtn.classList.toggle('active', adminMode);
+    }
     if (adminMode) initAdminForm();
     renderArticles();
     renderArticleFilters();
 }
 
+// Кнопка "Управление"
+if (adminToggleBtn) {
+    adminToggleBtn.addEventListener('click', () => toggleAdminPanel());
+}
+
+// Кнопка "Закрыть" в админке
+if (adminCloseBtn) {
+    adminCloseBtn.addEventListener('click', () => toggleAdminPanel(false));
+}
+
+// Двойной клик по заголовку (на всякий случай)
 if (articlesTitle) {
     articlesTitle.addEventListener('dblclick', (e) => {
         e.preventDefault();
-        adminMode = !adminMode;
-        localStorage.setItem('mAdminMode', adminMode);
-        updateAdminUI();
+        toggleAdminPanel();
     });
 }
 
@@ -1099,7 +1114,6 @@ buildSearchIndex();
 loadArticles();
 renderArticles();
 renderArticleFilters();
-if (adminMode) updateAdminUI();
 
 // Блокируем PWA-установку (браузерный "подтвердите действие")
 window.addEventListener('beforeinstallprompt', (e) => {
