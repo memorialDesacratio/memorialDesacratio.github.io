@@ -174,19 +174,28 @@ const counterObserver = new IntersectionObserver((entries) => {
     let running = false;
     let lastFrame = 0;
     let currentW = 0, currentH = 0;
+    let resizeTimer = null;
 
     function rand(min, max) { return Math.random() * (max - min) + min; }
     function isMobile() { return window.innerWidth <= 768; }
+    function isTiny() { return window.innerWidth <= 480; }
     function particleCount() {
-        if (window.innerWidth <= 480) return 45;
-        if (isMobile()) return 70;
-        return 120;
+        if (isTiny()) return 40;
+        if (isMobile()) return 65;
+        return 110;
+    }
+    function effectiveDPR() {
+        // Cap DPR at 2 for performance on high-DPI mobile screens
+        const dpr = window.devicePixelRatio || 1;
+        return isMobile() ? Math.min(dpr, 2) : Math.min(dpr, 3);
     }
 
     function createParticle(w, h, fromBottom) {
+        const isSmall = isTiny();
         return {
             x: rand(0, w), y: fromBottom ? rand(h + 5, h + 40) : rand(0, h),
-            size: rand(1.2, 3.2), alpha: rand(0.2, 0.55),
+            size: rand(isSmall ? 1.0 : 1.2, isSmall ? 2.5 : 3.2),
+            alpha: rand(isSmall ? 0.15 : 0.2, isSmall ? 0.4 : 0.55),
             speedY: rand(0.08, 0.25), driftX: rand(-0.12, 0.12),
             phase: rand(0, Math.PI * 2), phaseSpeed: rand(0.003, 0.01),
             sway: rand(0.015, 0.05),
@@ -200,11 +209,12 @@ const counterObserver = new IntersectionObserver((entries) => {
         const h = window.innerHeight;
         if (w === currentW && h === currentH) return;
         currentW = w; currentH = h;
-        canvas.width = w * devicePixelRatio;
-        canvas.height = h * devicePixelRatio;
+        const dpr = effectiveDPR();
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
         canvas.style.width = w + 'px';
         canvas.style.height = h + 'px';
-        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         const num = particleCount();
         const next = [];
         for (let i = 0; i < num; i++) {
@@ -214,11 +224,17 @@ const counterObserver = new IntersectionObserver((entries) => {
         particles = next;
     }
 
+    function debouncedResize() {
+        if (resizeTimer) { cancelAnimationFrame(resizeTimer); resizeTimer = null; }
+        resizeTimer = requestAnimationFrame(resize);
+    }
+
     function draw() {
         const w = window.innerWidth, h = window.innerHeight;
         ctx.clearRect(0, 0, w, h);
         const isLight = document.body.classList.contains('light-mode');
         const color = isLight ? '0,0,0' : '255,255,255';
+        const mobile = isMobile();
 
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
@@ -234,22 +250,24 @@ const counterObserver = new IntersectionObserver((entries) => {
             ctx.fill();
         }
 
-        const linkDist = isMobile() ? 100 : 150;
+        // Links — меньше дистанция и макс 2 связи на мобильных
+        const linkDist = mobile ? 80 : 150;
         const linkDistSq = linkDist * linkDist;
+        const maxLinks = mobile ? 2 : 3;
         for (let i = 0; i < particles.length; i++) {
             const a = particles[i];
             let links = 0;
             for (let j = i + 1; j < particles.length; j++) {
-                if (links >= 3) break;
+                if (links >= maxLinks) break;
                 const b = particles[j];
                 const dx = a.x - b.x, dy = a.y - b.y;
                 const distSq = dx * dx + dy * dy;
                 if (distSq > linkDistSq) continue;
                 const strength = 1 - (distSq / linkDistSq);
-                const alpha = Math.max(0, 0.3 * strength);
+                const alpha = Math.max(0, (mobile ? 0.2 : 0.3) * strength);
                 ctx.beginPath();
                 ctx.strokeStyle = `rgba(${color},${alpha})`;
-                ctx.lineWidth = 0.6;
+                ctx.lineWidth = mobile ? 0.4 : 0.6;
                 ctx.moveTo(a.x, a.y);
                 const mx = (a.x + b.x) / 2 + Math.sin(a.phase + b.phase) * 1;
                 const my = (a.y + b.y) / 2 + Math.cos(a.phase + b.phase) * 0.8;
@@ -262,7 +280,7 @@ const counterObserver = new IntersectionObserver((entries) => {
 
     function animate(ts) {
         if (!running) return;
-        const fps = isMobile() ? 24 : 40;
+        const fps = isMobile() ? 20 : 36;
         const frameMs = 1000 / fps;
         if (!lastFrame || ts - lastFrame >= frameMs) { lastFrame = ts; draw(); }
         rafId = requestAnimationFrame(animate);
@@ -272,22 +290,32 @@ const counterObserver = new IntersectionObserver((entries) => {
     function stop() { running = false; if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
 
     document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', debouncedResize);
     resize();
     start();
 })();
 
+// ========== ТРОТТЛ ==========
+function throttle(fn, limit) {
+    let last = 0;
+    return function(...args) {
+        const now = Date.now();
+        if (now - last >= limit) { last = now; fn.apply(this, args); }
+    };
+}
+
 // ========== ПАРАЛЛАКС ==========
-window.addEventListener('scroll', () => {
+window.addEventListener('scroll', throttle(() => {
     const hero = document.querySelector('.hero-content');
     if (hero) {
         const scrolled = window.pageYOffset;
-        if (scrolled < window.innerHeight) {
+        const h = window.innerHeight;
+        if (scrolled < h) {
             hero.style.transform = `translateY(${scrolled * 0.06}px)`;
-            hero.style.opacity = 1 - (scrolled / (window.innerHeight * 0.6));
+            hero.style.opacity = 1 - (scrolled / (h * 0.6));
         }
     }
-});
+}, 60));
 
 // ========== ПЛАВНЫЙ СКРОЛЛ ==========
 document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -307,16 +335,17 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 // ========== ПОДСВЕТКА РАЗДЕЛА ==========
 const sections = document.querySelectorAll('section[id]');
 const navAnchors = document.querySelectorAll('.nav-links a');
-window.addEventListener('scroll', () => {
+window.addEventListener('scroll', throttle(() => {
     let current = '';
+    const scrollY = window.pageYOffset;
     sections.forEach(section => {
         const top = section.offsetTop - 150;
-        if (window.pageYOffset >= top) current = section.getAttribute('id');
+        if (scrollY >= top) current = section.getAttribute('id');
     });
     navAnchors.forEach(a => {
         a.style.color = a.getAttribute('href') === '#' + current ? 'var(--accent)' : '';
     });
-});
+}, 80));
 
 // ========== ЗАПУСК ==========
 renderModules();

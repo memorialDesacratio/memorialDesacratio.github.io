@@ -2,30 +2,63 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0f" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f0f0f8" media="(prefers-color-scheme: light)">
+    <meta name="color-scheme" content="dark light">
+    <meta name="description" content="CyberDesacratio — OSINT, пентестинг, программирование, Linux. Личный архив знаний и исследований.">
+    <meta name="keywords" content="OSINT, пентестинг, кибербезопасность, Linux, программирование, Python, Arch">
+    <meta name="author" content="CyberDesacratio">
+    <meta name="robots" content="index, follow">
+
+    <!-- iOS / Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CyberDesacratio">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- Windows / IE -->
+    <meta name="application-name" content="CyberDesacratio">
+    <meta name="msapplication-TileColor" content="#0a0a0f">
+
+    <!-- Open Graph / Social -->
+    <meta property="og:title" content="CyberDesacratio">
+    <meta property="og:description" content="OSINT, пентестинг, программирование, Linux — личный архив знаний.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://memorialDesacratio.github.io/">
+
+    <!-- Preload критических ресурсов -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" as="style">
+    <link rel="preload" href="style.css" as="style">
+
+    <!-- Preload фонов (WebP, CSS fallback на JPEG) -->
+    <link rel="preload" href="assets/images/bg-dark-desktop.webp" as="image" media="(min-width: 1024px) and (prefers-color-scheme: dark)" type="image/webp">
+    <link rel="preload" href="assets/images/bg-light-desktop.webp" as="image" media="(min-width: 1024px) and (prefers-color-scheme: light)" type="image/webp">
+
     <title>CyberDesacratio | OSINT & Cyber Security</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <canvas id="particlesCanvas" aria-hidden="true"></canvas>
 
     <!-- ===== NAVBAR ===== -->
-    <nav class="navbar" id="navbar">
+    <nav class="navbar" id="navbar" role="navigation" aria-label="Основная навигация">
         <div class="container">
             <div class="logo">~/<span class="highlight">cyberdesacratio</span></div>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="#hero">Главная</a></li>
-                <li><a href="#about">Обо мне</a></li>
-                <li><a href="#success">Успехи</a></li>
-                <li><a href="#library">Модули</a></li>
-                <li><a href="#contact">Контакты</a></li>
+            <ul class="nav-links" id="navLinks" role="menubar">
+                <li role="none"><a href="#hero" role="menuitem">Главная</a></li>
+                <li role="none"><a href="#about" role="menuitem">Обо мне</a></li>
+                <li role="none"><a href="#success" role="menuitem">Успехи</a></li>
+                <li role="none"><a href="#library" role="menuitem">Модули</a></li>
+                <li role="none"><a href="#contact" role="menuitem">Контакты</a></li>
             </ul>
             <div class="nav-right">
                 <button class="theme-toggle" id="themeToggle" type="button" aria-label="Сменить тему">🌙</button>
-                <button class="burger" id="burgerBtn" type="button" aria-label="Меню">
+                <button class="burger" id="burgerBtn" type="button" aria-label="Открыть меню" aria-expanded="false">
                     <span></span><span></span><span></span>
                 </button>
             </div>
@@ -33,7 +66,7 @@
     </nav>
 
     <!-- ===== HERO ===== -->
-    <section class="hero" id="hero">
+    <section class="hero" id="hero" aria-label="Главный экран">
         <div class="container">
             <div class="hero-content">
                 <div class="hero-badge">✦ Цифровое пространство</div>
@@ -68,7 +101,7 @@
     </section>
 
     <!-- ===== ABOUT ===== -->
-    <section class="about" id="about">
+    <section class="about" id="about" aria-label="Обо мне">
         <div class="container">
             <h2 class="section-title">Обо <span class="highlight">мне</span></h2>
             <p class="section-subtitle">Кто я и чем занимаюсь</p>
@@ -98,7 +131,7 @@
     </section>
 
     <!-- ===== TIMELINE ===== -->
-    <section class="success" id="success">
+    <section class="success" id="success" aria-label="Мои успехи">
         <div class="container">
             <h2 class="section-title">Мои <span class="highlight">успехи</span></h2>
             <p class="section-subtitle">Хронология достижений и ключевых моментов</p>
@@ -206,7 +239,7 @@
     </section>
 
     <!-- ===== LIBRARY — МОДУЛИ ===== -->
-    <section class="library" id="library">
+    <section class="library" id="library" aria-label="Модули знаний">
         <div class="container">
             <h2 class="section-title">📚 Модули <span class="highlight">знаний</span></h2>
             <p class="section-subtitle">100+ структурированных материалов. Выбери модуль → открой подмодули → читай.</p>
@@ -217,40 +250,40 @@
     </section>
 
     <!-- ===== CONTACT ===== -->
-    <section class="contact" id="contact">
+    <section class="contact" id="contact" aria-label="Контакты">
         <div class="container">
             <h2 class="section-title">Связаться <span class="highlight">со мной</span></h2>
             <p class="section-subtitle">Есть вопрос, предложение или заказ? Пиши.</p>
             <div class="contact-links">
-                <a href="https://t.me/desacratio" class="contact-card" target="_blank" rel="noopener">
+                <a href="https://t.me/desacratio" class="contact-card" target="_blank" rel="noopener noreferrer">
                     <div class="contact-icon">✈️</div>
                     <div>
                         <strong>Telegram</strong>
                         <span>@desacratio</span>
                     </div>
                 </a>
-                <a href="mailto:aleksandrzaicev114@proton.me" class="contact-card" target="_blank" rel="noopener">
+                <a href="mailto:aleksandrzaicev114@proton.me" class="contact-card" target="_blank" rel="noopener noreferrer">
                     <div class="contact-icon">📧</div>
                     <div>
                         <strong>Email</strong>
                         <span>Proton Mail</span>
                     </div>
                 </a>
-                <a href="https://github.com/kall1shnik0vv" class="contact-card" target="_blank" rel="noopener">
+                <a href="https://github.com/kall1shnik0vv" class="contact-card" target="_blank" rel="noopener noreferrer">
                     <div class="contact-icon">🐙</div>
                     <div>
                         <strong>GitHub</strong>
                         <span>Все проекты</span>
                     </div>
                 </a>
-                <a href="https://kall1shnik0vv.github.io/" class="contact-card" target="_blank" rel="noopener">
+                <a href="https://kall1shnik0vv.github.io/" class="contact-card" target="_blank" rel="noopener noreferrer">
                     <div class="contact-icon">🌐</div>
                     <div>
                         <strong>Портфолио</strong>
                         <span>Мои работы</span>
                     </div>
                 </a>
-                <a href="https://osint-forum-production.up.railway.app/" class="contact-card" target="_blank" rel="noopener">
+                <a href="https://osint-forum-production.up.railway.app/" class="contact-card" target="_blank" rel="noopener noreferrer">
                     <div class="contact-icon">💬</div>
                     <div>
                         <strong>OSINT Forum</strong>
@@ -262,7 +295,7 @@
     </section>
 
     <!-- ===== FOOTER ===== -->
-    <footer class="footer">
+    <footer class="footer" role="contentinfo">
         <div class="container">
             <p>&copy; 2026 — CyberDesacratio. Все права защищены.</p>
             <p class="footer-motto">$ echo "In Cyberspace We Trust"</p>
@@ -270,12 +303,12 @@
     </footer>
 
     <!-- ===== ДИНАМИЧЕСКИЙ МОДАЛ МОДУЛЕЙ ===== -->
-    <div class="modal-overlay" id="moduleModal">
+    <div class="modal-overlay" id="moduleModal" role="dialog" aria-modal="true" aria-label="Модуль">
         <div class="modal modal-wide">
             <div class="modal-header">
-                <button class="modal-back" id="modalBack" style="display:none;">←</button>
+                <button class="modal-back" id="modalBack" style="display:none;" aria-label="Назад">←</button>
                 <h2 id="modalTitle">Модуль</h2>
-                <button class="modal-close">&times;</button>
+                <button class="modal-close" aria-label="Закрыть">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
                 <!-- контент генерируется через JS -->
@@ -284,6 +317,6 @@
     </div>
 
     <script src="data.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
