@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>memorialDesacratio | OSINT & Cyber Security</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ===== CANVAS ДЛЯ ЧАСТИЦ ===== -->
+    <canvas id="particlesCanvas" aria-hidden="true"></canvas>
+
+    <!-- ===== НАВИГАЦИЯ ===== -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="logo">memorial<span class="highlight">Desacratio</span></div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#hero">Главная</a></li>
+                <li><a href="#about">Обо мне</a></li>
+                <li><a href="#success">Успехи</a></li>
+                <li><a href="#library">Библиотека</a></li>
+                <li><a href="#contact">Контакты</a></li>
+            </ul>
+            <div class="nav-right">
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="Сменить тему">🌙</button>
+                <button class="burger" id="burgerBtn" type="button" aria-label="Меню">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="hero">
+        <div class="hero-overlay"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">Личное пространство</div>
+                <h1>memorial<span class="highlight">Desacratio</span></h1>
+                <p class="hero-subtitle">
+                    OSINT · Пентестинг · Кибербезопасность · Программирование · Linux/Unix
+                </p>
+                <p class="hero-desc">
+                    Делюсь успехами, знаниями и опытом в мире цифровых технологий.
+                    Статьи, исследования, заметки и полезные материалы.
+                </p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number" id="articlesCount">0</span>
+                        <span class="stat-label">Статей</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="projectsCount">0</span>
+                        <span class="stat-label">Проектов</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="expYears">0</span>
+                        <span class="stat-label">Лет в IT</span>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <a href="#library" class="btn btn-primary">📚 Библиотека</a>
+                    <a href="#about" class="btn btn-outline">Обо мне</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ОБО МНЕ ===== -->
+    <section class="about" id="about">
+        <div class="container">
+            <h2 class="section-title">Обо <span class="highlight">мне</span></h2>
+            <p class="section-subtitle">Кто я и чем занимаюсь</p>
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="about-icon">🛡️</div>
+                    <h3>Кибербезопасность</h3>
+                    <p>OSINT-исследования, пентестинг, анализ защищённости систем. Понимаю как работают атаки и как от них защищаться.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">💻</div>
+                    <h3>Программирование</h3>
+                    <p>Python, JavaScript, Bash. Пишу ботов, парсеры, скрипты автоматизации, веб-приложения и инструменты для OSINT.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">🐧</div>
+                    <h3>Linux / Unix</h3>
+                    <p>Arch Linux, Debian, Kali. Настройка серверов, контейнеризация Docker, администрирование и автоматизация.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">📡</div>
+                    <h3>OSINT</h3>
+                    <p>Сбор и анализ данных из открытых источников. Поиск информации, разведка по открытым данным, цифровой след.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== УСПЕХИ ===== -->
+    <section class="success" id="success">
+        <div class="container">
+            <h2 class="section-title">Мои <span class="highlight">успехи</span></h2>
+            <p class="section-subtitle">Чего я достиг и чем горжусь</p>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2026</div>
+                    <div class="timeline-content">
+                        <h3>Запуск memorialDesacratio</h3>
+                        <p>Создал личное пространство для обмена знаниями по OSINT, пентестингу и программированию.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2026</div>
+                    <div class="timeline-content">
+                        <h3>Проекты на Kwork</h3>
+                        <p>Начал фриланс: Telegram-боты, парсеры, скрипты автоматизации, сайты. Первые заказы.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2026</div>
+                    <div class="timeline-content">
+                        <h3>OSINT Forum</h3>
+                        <p>Разработал форум для OSINT-сообщества с SQLite, Express и современным фронтендом.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2026</div>
+                    <div class="timeline-content">
+                        <h3>Портфолио на GitHub</h3>
+                        <p>Опубликовал все проекты в открытом доступе. Боты, парсеры, сайты — всё с исходниками.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">2025</div>
+                    <div class="timeline-content">
+                        <h3>Начало пути</h3>
+                        <p>Начал изучать программирование и кибербезопасность. Python, Linux, OSINT —每一步 вглубь.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== БИБЛИОТЕКА ===== -->
+    <section class="library" id="library">
+        <div class="container">
+            <h2 class="section-title">📖 Библиотека <span class="highlight">статей</span></h2>
+            <p class="section-subtitle">Нажимай на категорию — читай статью</p>
+            <div class="library-grid">
+                <button class="library-card" data-modal="modal-osint">
+                    <div class="card-icon">🕵️</div>
+                    <h3>OSINT</h3>
+                    <p>Сбор данных из открытых источников, цифровая разведка, поиск информации</p>
+                    <span class="card-tag">Читать →</span>
+                </button>
+                <button class="library-card" data-modal="modal-pentest">
+                    <div class="card-icon">⚔️</div>
+                    <h3>Пентестинг</h3>
+                    <p>Тестирование на проникновение, уязвимости, эксплуатация, защита</p>
+                    <span class="card-tag">Читать →</span>
+                </button>
+                <button class="library-card" data-modal="modal-coding">
+                    <div class="card-icon">💻</div>
+                    <h3>Программирование</h3>
+                    <p>Python, JavaScript, Bash — код, скрипты, автоматизация, тулы</p>
+                    <span class="card-tag">Читать →</span>
+                </button>
+                <button class="library-card" data-modal="modal-linux">
+                    <div class="card-icon">🐧</div>
+                    <h3>Linux / Unix</h3>
+                    <p>Arch, Debian, Kali — настройка, администрирование, команды, Docker</p>
+                    <span class="card-tag">Читать →</span>
+                </button>
+                <button class="library-card" data-modal="modal-windows">
+                    <div class="card-icon">🪟</div>
+                    <h3>Windows</h3>
+                    <p>Настройка, безопасность, PowerShell, AD, работа с системой</p>
+                    <span class="card-tag">Читать →</span>
+                </button>
+                <button class="library-card" data-modal="modal-cyber">
+                    <div class="card-icon">🛡️</div>
+                    <h3>Кибербезопасность</h3>
+                    <p>Общие принципы безопасности, шифрование, VPN, анонимность, защита данных</p>
+                    <span class="card-tag">Читать →</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== КОНТАКТЫ ===== -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <h2 class="section-title">Связаться <span class="highlight">со мной</span></h2>
+            <p class="section-subtitle">Есть вопрос или предложение? Напиши мне</p>
+            <div class="contact-links">
+                <a href="https://t.me/desacratio" class="contact-card" target="_blank" rel="noopener">
+                    <div class="contact-icon">✈️</div>
+                    <div>
+                        <strong>Telegram</strong>
+                        <span>@desacratio</span>
+                    </div>
+                </a>
+                <a href="mailto:aleksandrzaicev114@proton.me" class="contact-card" target="_blank" rel="noopener">
+                    <div class="contact-icon">📧</div>
+                    <div>
+                        <strong>Email</strong>
+                        <span>Proton Mail</span>
+                    </div>
+                </a>
+                <a href="https://github.com/kall1shnik0vv" class="contact-card" target="_blank" rel="noopener">
+                    <div class="contact-icon">🐙</div>
+                    <div>
+                        <strong>GitHub</strong>
+                        <span>github.com/kall1shnik0vv</span>
+                    </div>
+                </a>
+                <a href="https://kall1shnik0vv.github.io/" class="contact-card" target="_blank" rel="noopener">
+                    <div class="contact-icon">🌐</div>
+                    <div>
+                        <strong>Портфолио</strong>
+                        <span>Мои проекты</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ФУТЕР ===== -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 — memorialDesacratio. Все права защищены.</p>
+            <p class="footer-motto">In Cyberspace We Trust</p>
+        </div>
+    </footer>
+
+    <!-- ===== МОДАЛЬНЫЕ ОКНА ===== -->
+
+    <!-- OSINT -->
+    <div class="modal-overlay" id="modal-osint">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>🕵️ OSINT</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Что такое OSINT?</h3>
+                <p>OSINT (Open Source Intelligence) — разведка по открытым источникам. Это сбор и анализ информации из общедоступных источников.</p>
+                
+                <h3>Основные инструменты</h3>
+                <ul>
+                    <li><strong>Maltego</strong> — визуализация связей между данными</li>
+                    <li><strong>Shodan</strong> — поиск устройств, подключённых к интернету</li>
+                    <li><strong>theHarvester</strong> — сбор email, поддоменов, IP</li>
+                    <li><strong>Recon-ng</strong> — фреймворк для веб-разведки</li>
+                    <li><strong>SpiderFoot</strong> — автоматический OSINT-сканер</li>
+                </ul>
+
+                <h3>Техники поиска</h3>
+                <p>Google Dorks — специальные операторы для точного поиска. Пример: <code>site:example.com filetype:pdf</code></p>
+                <p>Поиск по социальным сетям, форумам, утекшим базам данных.</p>
+
+                <h3>Этика</h3>
+                <p>OSINT — это легально. Мы используем только открытые данные. Не путай с взломом.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Пентестинг -->
+    <div class="modal-overlay" id="modal-pentest">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>⚔️ Пентестинг</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Что такое пентест?</h3>
+                <p>Penetration Testing — тестирование на проникновение. Легальная имитация атаки на систему для поиска уязвимостей.</p>
+
+                <h3>Этапы пентеста</h3>
+                <ol>
+                    <li><strong>Reconnaissance</strong> — сбор информации о цели</li>
+                    <li><strong>Scanning</strong> — сканирование портов и сервисов</li>
+                    <li><strong>Exploitation</strong> — эксплуатация уязвимостей</li>
+                    <li><strong>Post-Exploitation</strong> — закрепление в системе</li>
+                    <li><strong>Reporting</strong> — отчёт с рекомендациями</li>
+                </ol>
+
+                <h3>Инструменты</h3>
+                <ul>
+                    <li><strong>Nmap</strong> — сканер портов и сети</li>
+                    <li><strong>Metasploit</strong> — фреймворк для эксплуатации</li>
+                    <li><strong>Burp Suite</strong> — анализ веб-трафика</li>
+                    <li><strong>Hydra</strong> — брутфорс паролей</li>
+                    <li><strong>Wireshark</strong> — анализ сетевого трафика</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Программирование -->
+    <div class="modal-overlay" id="modal-coding">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>💻 Программирование</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Мой стек</h3>
+                <ul>
+                    <li><strong>Python</strong> — боты, парсеры, скрипты, тулы для OSINT</li>
+                    <li><strong>JavaScript</strong> — фронтенд, анимации, интерактив</li>
+                    <li><strong>Bash</strong> — автоматизация в Linux, скрипты для сервера</li>
+                    <li><strong>Node.js / Express</strong> — бэкенд, API, веб-приложения</li>
+                    <li><strong>SQL / SQLite</strong> — базы данных, запросы</li>
+                </ul>
+
+                <h3>Полезные практики</h3>
+                <p>Пиши код, который поймёшь через месяц. Комментарии — это не стыдно, это нормально.</p>
+                <p>Git — обязательно. Каждый проект должен быть в репозитории.</p>
+                <p>READ ME — документируй. Потом скажешь себе спасибо.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Linux -->
+    <div class="modal-overlay" id="modal-linux">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>🐧 Linux / Unix</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Мои дистрибутивы</h3>
+                <ul>
+                    <li><strong>Arch Linux</strong> — основной дистр. Полный контроль над системой.</li>
+                    <li><strong>Kali Linux</strong> — для пентеста и OSINT. Всё под рукой.</li>
+                    <li><strong>Debian</strong> — серверный дистр. Стабильность.</li>
+                </ul>
+
+                <h3>Полезные команды</h3>
+                <pre><code># Поиск файлов по содержимому
+grep -r "pattern" /path/
+
+# Мониторинг процессов
+htop
+
+# Сеть
+netstat -tulpn
+ss -tulpn
+
+# Права доступа
+chmod +x script.sh
+chown user:group file</code></pre>
+
+                <h3>Docker</h3>
+                <p>Контейнеризация — стандарт современной разработки. Каждый сервис в своём контейнере.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Windows -->
+    <div class="modal-overlay" id="modal-windows">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>🪟 Windows</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Windows для безопасности</h3>
+                <ul>
+                    <li><strong>PowerShell</strong> — автоматизация, управление системой</li>
+                    <li><strong>Active Directory</strong> — управление пользователями и политиками</li>
+                    <li><strong>Group Policy</strong> — централизованная настройка</li>
+                    <li><strong>Windows Defender</strong> — базовая защита, но можно лучше</li>
+                </ul>
+
+                <h3>Полезные команды PowerShell</h3>
+                <pre><code># Информация о системе
+Get-ComputerInfo
+
+# Сетевые соединения
+Get-NetTCPConnection
+
+# Запущенные процессы
+Get-Process
+
+# События безопасности
+Get-WinEvent -LogName Security</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кибербезопасность -->
+    <div class="modal-overlay" id="modal-cyber">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>🛡️ Кибербезопасность</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Основы безопасности</h3>
+                <ul>
+                    <li><strong>VPN</strong> — шифрование трафика, смена IP</li>
+                    <li><strong>2FA</strong> — двухфакторная аутентификация везде</li>
+                    <li><strong>Менеджер паролей</strong> — не храни пароли в браузере</li>
+                    <li><strong>Шифрование</strong> — GPG для email, LUKS для диска</li>
+                    <li><strong>Анонимность</strong> — Tor, приватные браузеры, метаданные</li>
+                </ul>
+
+                <h3>Принцип минимума</h3>
+                <p>Минимум прав — минимум риска. Не работай под root. Не давай приложениям лишних разрешений.</p>
+
+                <h3>Проверка на утечки</h3>
+                <p>Проверяй свои email на haveibeenpwned.com. Если данные утекли — меняй пароли немедленно.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
