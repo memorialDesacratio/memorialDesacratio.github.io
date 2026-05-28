@@ -137,15 +137,74 @@ function openModule(mod) {
 }
 
 // Открыть подмодуль (контент)
-function openSubmodule(mod, idx) {
+function openSubmodule(mod, idx, searchQuery) {
     currentSubmodule = idx;
     const sub = mod.submodules[idx];
     modalTitle.textContent = `${mod.icon} ${sub.title}`;
     modalBack.style.display = 'flex';
     modalBody.innerHTML = sub.content;
+
+    // Если есть поисковый запрос — подсвечиваем слова в контенте
+    if (searchQuery && searchQuery.length > 0) {
+        highlightInContent(modalBody, searchQuery);
+    }
+
     // Scroll to top and reset progress
     moduleModal.querySelector('.modal').scrollTop = 0;
     resetProgress();
+}
+
+// Подсветка найденного слова в HTML-контенте
+function highlightInContent(container, query) {
+    const q = query.toLowerCase();
+    // Обходим все текстовые узлы внутри контейнера (но не внутри <script>, <style>, <code>, <pre>)
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+        acceptNode: function(node) {
+            const parent = node.parentElement;
+            if (!parent) return NodeFilter.FILTER_ACCEPT;
+            const tag = parent.tagName;
+            if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'CODE' || tag === 'PRE') {
+                return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+        }
+    });
+
+    const toReplace = [];
+    let node;
+    while (node = walker.nextNode()) {
+        const text = node.textContent;
+        const lower = text.toLowerCase();
+        let idx = lower.indexOf(q);
+        if (idx === -1) continue;
+        toReplace.push({ node, text, idx });
+    }
+
+    // Заменяем с конца, чтобы не сбивались индексы
+    for (let i = toReplace.length - 1; i >= 0; i--) {
+        const { node, text, idx } = toReplace[i];
+        const before = text.substring(0, idx);
+        const match = text.substring(idx, idx + query.length);
+        const after = text.substring(idx + query.length);
+
+        const span = document.createElement('span');
+        span.className = 'search-highlight';
+        span.textContent = match;
+
+        const frag = document.createDocumentFragment();
+        if (before) frag.appendChild(document.createTextNode(before));
+        frag.appendChild(span);
+        if (after) frag.appendChild(document.createTextNode(after));
+        node.parentNode.replaceChild(frag, node);
+    }
+
+    // Если есть выделения — скроллим к первому
+    const first = container.querySelector('.search-highlight');
+    if (first) {
+        setTimeout(() => {
+            first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
 }
 
 // Закрытие модала
@@ -210,7 +269,7 @@ function buildFilter() {
         btn.className = 'filter-btn' + (activeFilter === cat.title ? ' active' : '');
         btn.innerHTML = `
             <span class="filter-icon">${cat.icon}</span>
-            <span>${cat.title}</span>
+            <span class="filter-name">${cat.title}</span>
             <span class="filter-count">${cat.count}</span>
         `;
         btn.addEventListener('click', () => {
@@ -229,7 +288,7 @@ function buildFilter() {
 
 function updateFilterUI() {
     filterList.querySelectorAll('.filter-btn').forEach(btn => {
-        const title = btn.querySelector('span:nth-child(2)').textContent;
+        const title = btn.querySelector('.filter-name').textContent;
         btn.classList.toggle('active', activeFilter === title);
     });
     if (filterReset) {
@@ -326,7 +385,7 @@ function renderSearchResults(results, q) {
         btn.addEventListener('click', () => {
             searchResults.classList.remove('active');
             searchInput.value = '';
-            openSubmodule(r.modRef, r.subIndex);
+            openSubmodule(r.modRef, r.subIndex, q);
         });
         searchResults.appendChild(btn);
     });
