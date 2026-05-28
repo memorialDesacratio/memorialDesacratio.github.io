@@ -1,6 +1,6 @@
 /**
- * memorialDesacratio — все скрипты
- * темы, частицы, модалки, бургер, счётчики
+ * CyberDesacratio — все скрипты
+ * темы, частицы, модули, модалки, бургер, счётчики
  */
 
 // ========== ПЕРЕКЛЮЧЕНИЕ ТЕМЫ ==========
@@ -17,15 +17,13 @@ function applyTheme(theme) {
     }
     localStorage.setItem('mTheme', theme);
     currentTheme = theme;
-    // обновляем частицы при смене темы
-    if (typeof drawParticles === 'function') drawParticles();
+    if (typeof drawParticles === 'function') setTimeout(drawParticles, 50);
 }
 
 applyTheme(currentTheme);
 
 themeToggle.addEventListener('click', () => {
-    const next = currentTheme === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
+    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
 });
 
 // ========== БУРГЕР-МЕНЮ ==========
@@ -37,7 +35,6 @@ burgerBtn.addEventListener('click', () => {
     burgerBtn.classList.toggle('active');
 });
 
-// закрываем меню при клике на ссылку
 document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', () => {
         navLinks.classList.remove('active');
@@ -45,62 +42,110 @@ document.querySelectorAll('.nav-links a').forEach(link => {
     });
 });
 
-// ========== МОДАЛКИ ==========
-document.querySelectorAll('.library-card').forEach(card => {
-    card.addEventListener('click', () => {
-        const modalId = card.getAttribute('data-modal');
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-    });
-});
+// ========== МОДУЛИ ==========
+const moduleGrid = document.getElementById('moduleGrid');
+const moduleModal = document.getElementById('moduleModal');
+const modalTitle = document.getElementById('modalTitle');
+const modalBody = document.getElementById('modalBody');
+const modalBack = document.getElementById('modalBack');
+const modalClose = moduleModal.querySelector('.modal-close');
 
-// закрытие по крестику
-document.querySelectorAll('.modal-close').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const modal = btn.closest('.modal-overlay');
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    });
-});
+let currentModule = null;
+let currentSubmodule = null;
 
-// закрытие по клику на фон
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
+// Рендер модулей
+function renderModules() {
+    moduleGrid.innerHTML = '';
+    MODULES.forEach(mod => {
+        const card = document.createElement('button');
+        card.className = 'library-card';
+        card.innerHTML = `
+            <div class="card-icon">${mod.icon}</div>
+            <h3>${mod.title}</h3>
+            <p>${mod.desc}</p>
+            <span class="card-count">${mod.count} подмодулей</span>
+            <span class="card-tag">Открыть модуль →</span>
+        `;
+        card.addEventListener('click', () => openModule(mod));
+        moduleGrid.appendChild(card);
     });
-});
+}
 
-// закрытие по Escape
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.active').forEach(m => {
-            m.classList.remove('active');
+// Открыть модуль (список подмодулей)
+function openModule(mod) {
+    currentModule = mod;
+    currentSubmodule = null;
+    modalTitle.textContent = `${mod.icon} ${mod.title}`;
+    modalBack.style.display = 'none';
+    
+    let html = `<div class="submodule-grid">`;
+    mod.submodules.forEach((sub, i) => {
+        html += `
+            <button class="submodule-card" data-index="${i}">
+                <span class="submodule-title">${sub.title}</span>
+                <span class="submodule-arrow">→</span>
+            </button>
+        `;
+    });
+    html += `</div>`;
+    modalBody.innerHTML = html;
+    
+    // Клик по подмодулю
+    modalBody.querySelectorAll('.submodule-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index);
+            openSubmodule(mod, idx);
         });
-        document.body.style.overflow = '';
+    });
+    
+    moduleModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Открыть подмодуль (контент)
+function openSubmodule(mod, idx) {
+    currentSubmodule = idx;
+    const sub = mod.submodules[idx];
+    modalTitle.textContent = `${mod.icon} ${sub.title}`;
+    modalBack.style.display = 'flex';
+    modalBody.innerHTML = sub.content;
+}
+
+// Закрытие модала
+function closeModal() {
+    moduleModal.classList.remove('active');
+    document.body.style.overflow = '';
+    currentModule = null;
+    currentSubmodule = null;
+}
+
+// Назад к подмодулям
+modalBack.addEventListener('click', () => {
+    if (currentModule && currentSubmodule !== null) {
+        openModule(currentModule);
     }
 });
 
-// ========== СЧЁТЧИКИ В HERO ==========
+modalClose.addEventListener('click', closeModal);
+moduleModal.addEventListener('click', (e) => {
+    if (e.target === moduleModal) closeModal();
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+});
+
+// ========== СЧЁТЧИКИ ==========
 function animateCounter(el, target, suffix = '') {
     let current = 0;
     const step = Math.ceil(target / 50);
     const timer = setInterval(() => {
         current += step;
-        if (current >= target) {
-            current = target;
-            clearInterval(timer);
-        }
+        if (current >= target) { current = target; clearInterval(timer); }
         el.textContent = current + suffix;
     }, 20);
 }
 
-// запускаем счётчики когда они в зоне видимости
 const counterObserver = new IntersectionObserver((entries) => {
     for (const entry of entries) {
         if (entry.isIntersecting) {
@@ -124,18 +169,14 @@ const counterObserver = new IntersectionObserver((entries) => {
     const canvas = document.getElementById('particlesCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-
     let particles = [];
     let rafId = null;
     let running = false;
     let lastFrame = 0;
-    let currentW = 0;
-    let currentH = 0;
+    let currentW = 0, currentH = 0;
 
     function rand(min, max) { return Math.random() * (max - min) + min; }
-
     function isMobile() { return window.innerWidth <= 768; }
-
     function particleCount() {
         if (window.innerWidth <= 480) return 45;
         if (isMobile()) return 70;
@@ -144,34 +185,26 @@ const counterObserver = new IntersectionObserver((entries) => {
 
     function createParticle(w, h, fromBottom) {
         return {
-            x: rand(0, w),
-            y: fromBottom ? rand(h + 5, h + 40) : rand(0, h),
-            size: rand(1.2, 3.2),
-            alpha: rand(0.2, 0.55),
-            speedY: rand(0.08, 0.25),
-            driftX: rand(-0.12, 0.12),
-            phase: rand(0, Math.PI * 2),
-            phaseSpeed: rand(0.003, 0.01),
+            x: rand(0, w), y: fromBottom ? rand(h + 5, h + 40) : rand(0, h),
+            size: rand(1.2, 3.2), alpha: rand(0.2, 0.55),
+            speedY: rand(0.08, 0.25), driftX: rand(-0.12, 0.12),
+            phase: rand(0, Math.PI * 2), phaseSpeed: rand(0.003, 0.01),
             sway: rand(0.015, 0.05),
         };
     }
 
-    window.drawParticles = function() {
-        draw();
-    };
+    window.drawParticles = function() { draw(); };
 
     function resize() {
         const w = window.innerWidth;
         const h = window.innerHeight;
         if (w === currentW && h === currentH) return;
-        currentW = w;
-        currentH = h;
+        currentW = w; currentH = h;
         canvas.width = w * devicePixelRatio;
         canvas.height = h * devicePixelRatio;
         canvas.style.width = w + 'px';
         canvas.style.height = h + 'px';
         ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
-
         const num = particleCount();
         const next = [];
         for (let i = 0; i < num; i++) {
@@ -182,34 +215,25 @@ const counterObserver = new IntersectionObserver((entries) => {
     }
 
     function draw() {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
+        const w = window.innerWidth, h = window.innerHeight;
         ctx.clearRect(0, 0, w, h);
-
         const isLight = document.body.classList.contains('light-mode');
         const color = isLight ? '0,0,0' : '255,255,255';
 
-        // рисуем частицы
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
             p.phase += p.phaseSpeed;
             p.x += p.driftX + Math.sin(p.phase) * p.sway;
             p.y -= p.speedY;
-
-            if (p.y + p.size < 0) {
-                particles[i] = createParticle(w, h, true);
-                continue;
-            }
+            if (p.y + p.size < 0) { particles[i] = createParticle(w, h, true); continue; }
             if (p.x < -10) p.x = w + 10;
             if (p.x > w + 10) p.x = -10;
-
             ctx.beginPath();
             ctx.fillStyle = `rgba(${color},${p.alpha})`;
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             ctx.fill();
         }
 
-        // паутина между частицами
         const linkDist = isMobile() ? 100 : 150;
         const linkDistSq = linkDist * linkDist;
         for (let i = 0; i < particles.length; i++) {
@@ -218,8 +242,7 @@ const counterObserver = new IntersectionObserver((entries) => {
             for (let j = i + 1; j < particles.length; j++) {
                 if (links >= 3) break;
                 const b = particles[j];
-                const dx = a.x - b.x;
-                const dy = a.y - b.y;
+                const dx = a.x - b.x, dy = a.y - b.y;
                 const distSq = dx * dx + dy * dy;
                 if (distSq > linkDistSq) continue;
                 const strength = 1 - (distSq / linkDistSq);
@@ -241,29 +264,14 @@ const counterObserver = new IntersectionObserver((entries) => {
         if (!running) return;
         const fps = isMobile() ? 24 : 40;
         const frameMs = 1000 / fps;
-        if (!lastFrame || ts - lastFrame >= frameMs) {
-            lastFrame = ts;
-            draw();
-        }
+        if (!lastFrame || ts - lastFrame >= frameMs) { lastFrame = ts; draw(); }
         rafId = requestAnimationFrame(animate);
     }
 
-    function start() {
-        if (running) return;
-        running = true;
-        rafId = requestAnimationFrame(animate);
-    }
+    function start() { if (!running) { running = true; rafId = requestAnimationFrame(animate); } }
+    function stop() { running = false; if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
 
-    function stop() {
-        running = false;
-        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    }
-
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) stop();
-        else start();
-    });
-
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
     window.addEventListener('resize', resize);
     resize();
     start();
@@ -296,10 +304,9 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     });
 });
 
-// ========== ПОДСВЕТКА ТЕКУЩЕГО РАЗДЕЛА ==========
+// ========== ПОДСВЕТКА РАЗДЕЛА ==========
 const sections = document.querySelectorAll('section[id]');
 const navAnchors = document.querySelectorAll('.nav-links a');
-
 window.addEventListener('scroll', () => {
     let current = '';
     sections.forEach(section => {
@@ -311,5 +318,8 @@ window.addEventListener('scroll', () => {
     });
 });
 
-console.log('%c memorialDesacratio ', 'background: #667eea; color: #fff; font-size: 16px; padding: 8px 16px; border-radius: 8px; font-weight: bold;');
-console.log('%c In Cyberspace We Trust ', 'color: #667eea; font-size: 12px;');
+// ========== ЗАПУСК ==========
+renderModules();
+
+console.log('%c CyberDesacratio ', 'background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 18px; padding: 10px 20px; border-radius: 8px; font-weight: bold;');
+console.log('%c In Cyberspace We Trust ', 'color: #667eea; font-size: 13px;');
