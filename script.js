@@ -194,8 +194,8 @@ const counterObserver = new IntersectionObserver((entries) => {
         const isSmall = isTiny();
         return {
             x: rand(0, w), y: fromBottom ? rand(h + 5, h + 40) : rand(0, h),
-            size: rand(isSmall ? 1.0 : 1.2, isSmall ? 2.5 : 3.2),
-            alpha: rand(isSmall ? 0.15 : 0.2, isSmall ? 0.4 : 0.55),
+            size: rand(isSmall ? 1.2 : 1.5, isSmall ? 2.8 : 3.6),
+            alpha: rand(isSmall ? 0.25 : 0.3, isSmall ? 0.55 : 0.7),
             speedY: rand(0.08, 0.25), driftX: rand(-0.12, 0.12),
             phase: rand(0, Math.PI * 2), phaseSpeed: rand(0.003, 0.01),
             sway: rand(0.015, 0.05),
@@ -250,8 +250,8 @@ const counterObserver = new IntersectionObserver((entries) => {
             ctx.fill();
         }
 
-        // Links — меньше дистанция и макс 2 связи на мобильных
-        const linkDist = mobile ? 80 : 150;
+        // Links — паутинка
+        const linkDist = mobile ? 100 : 170;
         const linkDistSq = linkDist * linkDist;
         const maxLinks = mobile ? 2 : 3;
         for (let i = 0; i < particles.length; i++) {
@@ -264,10 +264,10 @@ const counterObserver = new IntersectionObserver((entries) => {
                 const distSq = dx * dx + dy * dy;
                 if (distSq > linkDistSq) continue;
                 const strength = 1 - (distSq / linkDistSq);
-                const alpha = Math.max(0, (mobile ? 0.2 : 0.3) * strength);
+                const alpha = Math.max(0, (mobile ? 0.35 : 0.5) * strength);
                 ctx.beginPath();
                 ctx.strokeStyle = `rgba(${color},${alpha})`;
-                ctx.lineWidth = mobile ? 0.4 : 0.6;
+                ctx.lineWidth = mobile ? 0.6 : 1.0;
                 ctx.moveTo(a.x, a.y);
                 const mx = (a.x + b.x) / 2 + Math.sin(a.phase + b.phase) * 1;
                 const my = (a.y + b.y) / 2 + Math.cos(a.phase + b.phase) * 0.8;
