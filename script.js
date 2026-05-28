@@ -1,7 +1,17 @@
 /**
  * CyberDesacratio — все скрипты
- * темы, частицы, модули, модалки, бургер, счётчики
+ * темы, частицы, модули, модалки, поиск, фильтр,
+ * статьи, прогресс-бар, кнопка наверх, scroll reveal
  */
+
+// ========== ТРОТТЛ ==========
+function throttle(fn, limit) {
+    let last = 0;
+    return function(...args) {
+        const now = Date.now();
+        if (now - last >= limit) { last = now; fn.apply(this, args); }
+    };
+}
 
 // ========== ПЕРЕКЛЮЧЕНИЕ ТЕМЫ ==========
 const themeToggle = document.getElementById('themeToggle');
@@ -42,23 +52,47 @@ document.querySelectorAll('.nav-links a').forEach(link => {
     });
 });
 
-// ========== МОДУЛИ ==========
+// ========== ПЛАВНЫЙ СКРОЛЛ ==========
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return;
+        const target = document.querySelector(href);
+        if (target) {
+            e.preventDefault();
+            const offset = 80;
+            const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+            window.scrollTo({ top, behavior: 'smooth' });
+        }
+    });
+});
+
+// ====================================================================
+// МОДУЛИ
+// ====================================================================
 const moduleGrid = document.getElementById('moduleGrid');
 const moduleModal = document.getElementById('moduleModal');
 const modalTitle = document.getElementById('modalTitle');
 const modalBody = document.getElementById('modalBody');
 const modalBack = document.getElementById('modalBack');
 const modalClose = moduleModal.querySelector('.modal-close');
+const modalProgressBar = document.getElementById('modalProgressBar');
 
 let currentModule = null;
 let currentSubmodule = null;
+let activeFilter = null;
 
-// Рендер модулей
-function renderModules() {
+// Рендер модулей с учётом фильтра
+function renderModules(filterCategory) {
     moduleGrid.innerHTML = '';
-    MODULES.forEach(mod => {
+    let modules = MODULES;
+    if (filterCategory) {
+        modules = MODULES.filter(m => m.title === filterCategory);
+    }
+    modules.forEach(mod => {
         const card = document.createElement('button');
         card.className = 'library-card';
+        card.dataset.category = mod.title;
         card.innerHTML = `
             <div class="card-icon">${mod.icon}</div>
             <h3>${mod.title}</h3>
@@ -77,7 +111,7 @@ function openModule(mod) {
     currentSubmodule = null;
     modalTitle.textContent = `${mod.icon} ${mod.title}`;
     modalBack.style.display = 'none';
-    
+
     let html = `<div class="submodule-grid">`;
     mod.submodules.forEach((sub, i) => {
         html += `
@@ -89,17 +123,17 @@ function openModule(mod) {
     });
     html += `</div>`;
     modalBody.innerHTML = html;
-    
-    // Клик по подмодулю
+
     modalBody.querySelectorAll('.submodule-card').forEach(btn => {
         btn.addEventListener('click', () => {
             const idx = parseInt(btn.dataset.index);
             openSubmodule(mod, idx);
         });
     });
-    
+
     moduleModal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    resetProgress();
 }
 
 // Открыть подмодуль (контент)
@@ -109,6 +143,9 @@ function openSubmodule(mod, idx) {
     modalTitle.textContent = `${mod.icon} ${sub.title}`;
     modalBack.style.display = 'flex';
     modalBody.innerHTML = sub.content;
+    // Scroll to top and reset progress
+    moduleModal.querySelector('.modal').scrollTop = 0;
+    resetProgress();
 }
 
 // Закрытие модала
@@ -117,6 +154,7 @@ function closeModal() {
     document.body.style.overflow = '';
     currentModule = null;
     currentSubmodule = null;
+    resetProgress();
 }
 
 // Назад к подмодулям
@@ -135,7 +173,443 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
 });
 
-// ========== СЧЁТЧИКИ ==========
+// ========== PROGRESS BAR ЧТЕНИЯ ==========
+function resetProgress() {
+    if (modalProgressBar) modalProgressBar.style.width = '0%';
+}
+
+const modalElement = moduleModal ? moduleModal.querySelector('.modal') : null;
+if (modalElement) {
+    modalElement.addEventListener('scroll', throttle(() => {
+        if (currentSubmodule === null) return;
+        const el = modalElement;
+        const scrollTop = el.scrollTop;
+        const scrollHeight = el.scrollHeight - el.clientHeight;
+        if (scrollHeight <= 0) return;
+        const percent = Math.min(100, Math.round((scrollTop / scrollHeight) * 100));
+        if (modalProgressBar) modalProgressBar.style.width = percent + '%';
+    }, 50));
+}
+
+// ====================================================================
+// ФИЛЬТР ПО КАТЕГОРИЯМ
+// ====================================================================
+const filterList = document.getElementById('filterList');
+const filterReset = document.getElementById('filterReset');
+
+function buildFilter() {
+    if (!filterList) return;
+    const categories = MODULES.map(m => ({
+        title: m.title,
+        icon: m.icon,
+        count: m.count
+    }));
+    filterList.innerHTML = '';
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn' + (activeFilter === cat.title ? ' active' : '');
+        btn.innerHTML = `
+            <span class="filter-icon">${cat.icon}</span>
+            <span>${cat.title}</span>
+            <span class="filter-count">${cat.count}</span>
+        `;
+        btn.addEventListener('click', () => {
+            if (activeFilter === cat.title) {
+                activeFilter = null;
+            } else {
+                activeFilter = cat.title;
+            }
+            updateFilterUI();
+            renderModules(activeFilter);
+        });
+        filterList.appendChild(btn);
+    });
+    updateFilterUI();
+}
+
+function updateFilterUI() {
+    filterList.querySelectorAll('.filter-btn').forEach(btn => {
+        const title = btn.querySelector('span:nth-child(2)').textContent;
+        btn.classList.toggle('active', activeFilter === title);
+    });
+    if (filterReset) {
+        filterReset.classList.toggle('visible', activeFilter !== null);
+    }
+}
+
+if (filterReset) {
+    filterReset.addEventListener('click', () => {
+        activeFilter = null;
+        updateFilterUI();
+        renderModules(null);
+    });
+}
+
+// ====================================================================
+// ПОИСК ПО МОДУЛЯМ И ПОДМОДУЛЯМ
+// ====================================================================
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+
+// Построить поисковый индекс
+let searchIndex = [];
+function buildSearchIndex() {
+    searchIndex = [];
+    MODULES.forEach(mod => {
+        mod.submodules.forEach((sub, idx) => {
+            // Извлекаем чистый текст из HTML-контента
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = sub.content;
+            const plainText = tempDiv.textContent || '';
+            searchIndex.push({
+                moduleTitle: mod.title,
+                moduleIcon: mod.icon,
+                subTitle: sub.title,
+                subIndex: idx,
+                modRef: mod,
+                text: (sub.title + ' ' + plainText).toLowerCase(),
+                preview: plainText.substring(0, 200)
+            });
+        });
+    });
+}
+
+function performSearch(query) {
+    if (!query || query.length < 2) {
+        searchResults.classList.remove('active');
+        return;
+    }
+    const q = query.toLowerCase();
+    const LIMIT = 12;
+    let results = [];
+    for (const item of searchIndex) {
+        if (results.length >= LIMIT) break;
+        if (item.text.includes(q)) {
+            results.push(item);
+        }
+    }
+    renderSearchResults(results, q);
+}
+
+function renderSearchResults(results, q) {
+    searchResults.innerHTML = '';
+    if (results.length === 0) {
+        searchResults.innerHTML = `<div class="search-no-results">Ничего не найдено</div>`;
+        searchResults.classList.add('active');
+        return;
+    }
+    results.forEach(r => {
+        // Находим контекст с подсветкой
+        const idx = r.text.indexOf(q);
+        let matchText = '';
+        if (idx >= 0) {
+            const start = Math.max(0, idx - 40);
+            const end = Math.min(r.text.length, idx + q.length + 60);
+            let snippet = r.text.substring(start, end);
+            // Подсвечиваем
+            const qIdx = snippet.indexOf(q);
+            if (qIdx >= 0) {
+                matchText = '…' + snippet.substring(0, qIdx) +
+                    '<mark>' + snippet.substring(qIdx, qIdx + q.length) + '</mark>' +
+                    snippet.substring(qIdx + q.length) + '…';
+            } else {
+                matchText = '…' + snippet + '…';
+            }
+        }
+        const btn = document.createElement('button');
+        btn.className = 'search-result-item';
+        btn.innerHTML = `
+            <span class="result-module">${r.moduleIcon} ${r.moduleTitle}</span>
+            <span class="result-title">${r.subTitle}</span>
+            <span class="result-match">${matchText}</span>
+        `;
+        btn.addEventListener('click', () => {
+            searchResults.classList.remove('active');
+            searchInput.value = '';
+            openSubmodule(r.modRef, r.subIndex);
+        });
+        searchResults.appendChild(btn);
+    });
+    searchResults.classList.add('active');
+}
+
+if (searchInput) {
+    searchInput.addEventListener('input', throttle(function() {
+        performSearch(this.value.trim());
+    }, 200));
+
+    // Закрыть поиск при клике вне
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.hero-search')) {
+            searchResults.classList.remove('active');
+        }
+    });
+
+    // Закрыть по Escape
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            searchResults.classList.remove('active');
+            searchInput.blur();
+        }
+        if (e.key === 'Enter') {
+            // Открыть первый результат
+            const first = searchResults.querySelector('.search-result-item');
+            if (first) first.click();
+        }
+    });
+}
+
+// ====================================================================
+// СТАТЬИ — загрузка, хранение, просмотр
+// ====================================================================
+const articlesGrid = document.getElementById('articlesGrid');
+const articlesEmpty = document.getElementById('articlesEmpty');
+const fileInput = document.getElementById('fileInput');
+const articlesUpload = document.getElementById('articlesUpload');
+
+let articles = [];
+
+// Загрузить статьи из localStorage
+function loadArticles() {
+    try {
+        const saved = localStorage.getItem('mArticles');
+        if (saved) articles = JSON.parse(saved);
+    } catch(e) { articles = []; }
+}
+
+// Сохранить статьи
+function saveArticles() {
+    try {
+        localStorage.setItem('mArticles', JSON.stringify(articles));
+    } catch(e) {
+        // Если localStorage переполнен, удаляем самые старые статьи
+        if (e.name === 'QuotaExceededError' || e.code === 22) {
+            while (articles.length > 0) {
+                articles.shift();
+                try {
+                    localStorage.setItem('mArticles', JSON.stringify(articles));
+                    break;
+                } catch(e2) { continue; }
+            }
+        }
+    }
+}
+
+// Рендер статей
+function renderArticles() {
+    if (!articlesGrid || !articlesEmpty) return;
+    articlesGrid.innerHTML = '';
+    if (articles.length === 0) {
+        articlesEmpty.classList.remove('hidden');
+        return;
+    }
+    articlesEmpty.classList.add('hidden');
+    // Сортируем от новых к старым
+    const sorted = [...articles].reverse();
+    sorted.forEach((art, displayIdx) => {
+        const realIdx = articles.length - 1 - displayIdx;
+        const card = document.createElement('div');
+        card.className = 'article-card reveal';
+        const preview = art.content.replace(/<[^>]*>/g, '').substring(0, 150);
+        card.innerHTML = `
+            <span class="article-type">${art.type}</span>
+            <button class="article-delete" data-index="${realIdx}" aria-label="Удалить статью">✕</button>
+            <h3>${escHtml(art.title)}</h3>
+            <div class="article-date">${art.date}</div>
+            <div class="article-preview">${escHtml(preview)}</div>
+        `;
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.article-delete')) return;
+            openArticle(realIdx);
+        });
+        // Кнопка удаления
+        const delBtn = card.querySelector('.article-delete');
+        delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteArticle(parseInt(delBtn.dataset.index));
+        });
+        articlesGrid.appendChild(card);
+    });
+}
+
+function escHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// Удалить статью
+function deleteArticle(idx) {
+    if (idx < 0 || idx >= articles.length) return;
+    articles.splice(idx, 1);
+    saveArticles();
+    renderArticles();
+}
+
+// Открыть статью
+function openArticle(idx) {
+    const art = articles[idx];
+    if (!art) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay active';
+    overlay.style.display = 'flex';
+
+    let contentHtml = '';
+    if (art.type === 'PDF') {
+        // Для PDF показываем встроенный просмотрщик с blob URL
+        contentHtml = `<div style="width:100%;height:80vh;border-radius:12px;overflow:hidden;">
+            <iframe src="${art.blobUrl || ''}" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
+        </div>`;
+    } else {
+        contentHtml = `<div class="article-viewer-content">${art.content}</div>`;
+    }
+
+    overlay.innerHTML = `
+        <div class="modal article-viewer" style="max-width:800px;">
+            <div class="article-viewer-header">
+                <h2>${escHtml(art.title)}</h2>
+                <button class="modal-close" aria-label="Закрыть">&times;</button>
+            </div>
+            ${contentHtml}
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    // Анимация появления
+    requestAnimationFrame(() => overlay.style.opacity = '1');
+
+    overlay.querySelector('.modal-close').addEventListener('click', () => {
+        overlay.remove();
+        document.body.style.overflow = '';
+    });
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            overlay.remove();
+            document.body.style.overflow = '';
+        }
+    });
+    document.addEventListener('keydown', function handler(e) {
+        if (e.key === 'Escape') {
+            overlay.remove();
+            document.body.style.overflow = '';
+            document.removeEventListener('keydown', handler);
+        }
+    });
+}
+
+// Форматирование даты
+function formatDate() {
+    const d = new Date();
+    const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// Обработка загруженного файла
+function handleFile(file) {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+        alert('Файл слишком большой. Максимум 10MB.');
+        return;
+    }
+
+    const name = file.name.replace(/\.[^/.]+$/, '');
+    const ext = file.name.split('.').pop().toLowerCase();
+    const reader = new FileReader();
+
+    if (ext === 'pdf') {
+        // Для PDF сохраняем как base64
+        reader.onload = function(e) {
+            const base64 = e.target.result;
+            const blobUrl = URL.createObjectURL(file);
+            articles.push({
+                title: name || 'PDF документ',
+                type: 'PDF',
+                content: '',
+                blobUrl: blobUrl,
+                base64: base64,
+                date: formatDate()
+            });
+            saveArticles();
+            renderArticles();
+        };
+        reader.readAsDataURL(file);
+    } else if (ext === 'html' || ext === 'htm') {
+        reader.onload = function(e) {
+            let content = e.target.result;
+            // Санитайзим базово: убираем скрипты
+            content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
+            // Извлекаем title из HTML если есть
+            const titleMatch = content.match(/<title[^>]*>([^<]*)<\/title>/i);
+            const title = titleMatch ? titleMatch[1].trim() : (name || 'HTML документ');
+            articles.push({
+                title: title,
+                type: 'HTML',
+                content: content,
+                date: formatDate()
+            });
+            saveArticles();
+            renderArticles();
+        };
+        reader.readAsText(file, 'UTF-8');
+    } else {
+        // TXT и прочее
+        reader.onload = function(e) {
+            let content = e.target.result;
+            // Экранируем HTML-спецсимволы для безопасного отображения
+            content = content
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            // Преобразуем переносы строк в <br>
+            content = content.replace(/\n/g, '<br>');
+            articles.push({
+                title: name || 'Текстовый документ',
+                type: 'TXT',
+                content: content,
+                date: formatDate()
+            });
+            saveArticles();
+            renderArticles();
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+}
+
+if (fileInput) {
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            handleFile(this.files[0]);
+        }
+        this.value = '';
+    });
+}
+
+// Drag & drop на кнопку загрузки
+if (articlesUpload) {
+    articlesUpload.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        articlesUpload.style.transform = 'scale(1.02)';
+    });
+    articlesUpload.addEventListener('dragleave', () => {
+        articlesUpload.style.transform = '';
+    });
+    articlesUpload.addEventListener('drop', (e) => {
+        e.preventDefault();
+        articlesUpload.style.transform = '';
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+}
+
+// ====================================================================
+// СЧЁТЧИКИ
+// ====================================================================
 function animateCounter(el, target, suffix = '') {
     let current = 0;
     const step = Math.ceil(target / 50);
@@ -151,7 +625,7 @@ const counterObserver = new IntersectionObserver((entries) => {
         if (entry.isIntersecting) {
             const el = entry.target;
             const id = el.id;
-            if (id === 'articlesCount') animateCounter(el, 100, '+');
+            if (id === 'articlesCount') animateCounter(el, 108, '+');
             if (id === 'projectsCount') animateCounter(el, 25, '+');
             if (id === 'expYears') animateCounter(el, 3, '+');
             counterObserver.unobserve(el);
@@ -164,7 +638,9 @@ const counterObserver = new IntersectionObserver((entries) => {
     if (el) counterObserver.observe(el);
 });
 
-// ========== ЧАСТИЦЫ ==========
+// ====================================================================
+// ЧАСТИЦЫ
+// ====================================================================
 (function() {
     const canvas = document.getElementById('particlesCanvas');
     if (!canvas) return;
@@ -185,7 +661,6 @@ const counterObserver = new IntersectionObserver((entries) => {
         return 110;
     }
     function effectiveDPR() {
-        // Cap DPR at 2 for performance on high-DPI mobile screens
         const dpr = window.devicePixelRatio || 1;
         return isMobile() ? Math.min(dpr, 2) : Math.min(dpr, 3);
     }
@@ -250,7 +725,6 @@ const counterObserver = new IntersectionObserver((entries) => {
             ctx.fill();
         }
 
-        // Links — паутинка
         const linkDist = mobile ? 100 : 170;
         const linkDistSq = linkDist * linkDist;
         const maxLinks = mobile ? 2 : 3;
@@ -295,15 +769,6 @@ const counterObserver = new IntersectionObserver((entries) => {
     start();
 })();
 
-// ========== ТРОТТЛ ==========
-function throttle(fn, limit) {
-    let last = 0;
-    return function(...args) {
-        const now = Date.now();
-        if (now - last >= limit) { last = now; fn.apply(this, args); }
-    };
-}
-
 // ========== ПАРАЛЛАКС ==========
 window.addEventListener('scroll', throttle(() => {
     const hero = document.querySelector('.hero-content');
@@ -317,28 +782,13 @@ window.addEventListener('scroll', throttle(() => {
     }
 }, 60));
 
-// ========== ПЛАВНЫЙ СКРОЛЛ ==========
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', function(e) {
-        const href = this.getAttribute('href');
-        if (href === '#') return;
-        const target = document.querySelector(href);
-        if (target) {
-            e.preventDefault();
-            const offset = 80;
-            const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-            window.scrollTo({ top, behavior: 'smooth' });
-        }
-    });
-});
-
 // ========== ПОДСВЕТКА РАЗДЕЛА ==========
-const sections = document.querySelectorAll('section[id]');
+const secs = document.querySelectorAll('section[id]');
 const navAnchors = document.querySelectorAll('.nav-links a');
 window.addEventListener('scroll', throttle(() => {
     let current = '';
     const scrollY = window.pageYOffset;
-    sections.forEach(section => {
+    secs.forEach(section => {
         const top = section.offsetTop - 150;
         if (scrollY >= top) current = section.getAttribute('id');
     });
@@ -347,8 +797,59 @@ window.addEventListener('scroll', throttle(() => {
     });
 }, 80));
 
-// ========== ЗАПУСК ==========
-renderModules();
+// ========== КНОПКА НАВЕРХ ==========
+const backToTop = document.getElementById('backToTop');
+if (backToTop) {
+    window.addEventListener('scroll', throttle(() => {
+        if (window.pageYOffset > 400) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
+    }, 100));
+
+    backToTop.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+// ========== SCROLL REVEAL ==========
+(function() {
+    const revealElements = document.querySelectorAll('.reveal:not(.article-card .reveal)');
+    if (!revealElements.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const delay = Array.from(revealElements).indexOf(entry.target) % 12 * 40;
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, delay);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    revealElements.forEach(el => observer.observe(el));
+})();
+
+// ====================================================================
+// ЗАПУСК
+// ====================================================================
+renderModules(null);
+buildFilter();
+buildSearchIndex();
+loadArticles();
+renderArticles();
+
+// Добавить reveal классы основным секциям динамически
+document.querySelectorAll('section').forEach(s => {
+    if (!s.classList.contains('reveal')) s.classList.add('reveal');
+});
 
 console.log('%c CyberDesacratio ', 'background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 18px; padding: 10px 20px; border-radius: 8px; font-weight: bold;');
 console.log('%c In Cyberspace We Trust ', 'color: #667eea; font-size: 13px;');
