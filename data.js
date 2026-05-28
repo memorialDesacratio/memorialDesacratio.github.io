@@ -2243,3 +2243,38 @@ identify -verbose photo.jpg</code></pre>
         ]
     }
 ];
+
+
+/**
+ * Статические статьи — добавляются в репозиторий и видны всем посетителям.
+ * Формат:
+ *   title: string,        // заголовок
+ *   type: 'TXT'|'HTML',   // тип контента
+ *   content: string,      // HTML-контент
+ *   date: string,         // дата публикации
+ *   static: true          // флаг статической статьи (без кнопки удаления в UI)
+ *
+ * PDF через статику не поддерживается — используй HTML.
+ */
+const STATIC_ARTICLES = [
+    {
+        title: '💡 Как добавлять статьи',
+        type: 'HTML',
+        content: `
+            <h3>Как добавить свою статью</h3>
+            <p>Отредактируй <code>data.js</code> в репозитории <code>memorialDesacratio.github.io</code>.</p>
+            <p>Найди массив <code>STATIC_ARTICLES</code> в конце файла и добавь туда новый объект:</p>
+            <pre><code>{
+    title: 'Название',
+    type: 'HTML',
+    content: '&lt;p&gt;Текст&lt;/p&gt;',
+    date: '28 мая 2026',
+    static: true
+}</code></pre>
+            <p>После добавления — запуши изменения. GitHub Pages обновит сайт через пару минут.</p>
+            <p>Не забудь <code>static: true</code> — это скрывает кнопку удаления для обычных посетителей.</p>
+        `,
+        date: '28 мая 2026',
+        static: true
+    }
+];

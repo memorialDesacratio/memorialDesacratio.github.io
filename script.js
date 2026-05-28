@@ -428,25 +428,35 @@ const articlesUpload = document.getElementById('articlesUpload');
 
 let articles = [];
 
-// Загрузить статьи из localStorage
+// Загрузить статьи из localStorage + статические из data.js
 function loadArticles() {
+    const local = [];
     try {
         const saved = localStorage.getItem('mArticles');
-        if (saved) articles = JSON.parse(saved);
-    } catch(e) { articles = []; }
+        if (saved) local.push(...JSON.parse(saved));
+    } catch(e) { /* ignore */ }
+
+    // Статические статьи из data.js (помечаем флагом static)
+    const staticArts = (typeof STATIC_ARTICLES !== 'undefined' && Array.isArray(STATIC_ARTICLES))
+        ? STATIC_ARTICLES.map(a => ({ ...a, static: true }))
+        : [];
+
+    // Объединяем: сначала статические, потом из localStorage
+    articles = [...staticArts, ...local];
 }
 
-// Сохранить статьи
+// Сохранить статьи (только нестатические — статические живут в data.js)
 function saveArticles() {
+    const toSave = articles.filter(a => !a.static);
     try {
-        localStorage.setItem('mArticles', JSON.stringify(articles));
+        localStorage.setItem('mArticles', JSON.stringify(toSave));
     } catch(e) {
-        // Если localStorage переполнен, удаляем самые старые статьи
+        // Если localStorage переполнен, удаляем самые старые
         if (e.name === 'QuotaExceededError' || e.code === 22) {
-            while (articles.length > 0) {
-                articles.shift();
+            while (toSave.length > 0) {
+                toSave.shift();
                 try {
-                    localStorage.setItem('mArticles', JSON.stringify(articles));
+                    localStorage.setItem('mArticles', JSON.stringify(toSave));
                     break;
                 } catch(e2) { continue; }
             }
@@ -460,8 +470,6 @@ function renderArticles() {
     articlesGrid.innerHTML = '';
     if (articles.length === 0) {
         articlesEmpty.classList.remove('hidden');
-        // Обновляем админ UI
-        if (typeof updateAdminUI === 'function') updateAdminUI();
         return;
     }
     articlesEmpty.classList.add('hidden');
@@ -472,9 +480,12 @@ function renderArticles() {
         const card = document.createElement('div');
         card.className = 'article-card';
         const preview = art.content.replace(/<[^>]*>/g, '').substring(0, 150);
+        const isStatic = art.static === true;
+        // Кнопка удаления — только в админ-режиме и только для нестатических статей
+        const showDelete = !isStatic && adminMode;
         card.innerHTML = `
             <span class="article-type">${art.type}</span>
-            <button class="article-delete" data-index="${realIdx}" aria-label="Удалить статью">✕</button>
+            ${showDelete ? `<button class="article-delete" data-index="${realIdx}" aria-label="Удалить статью">✕</button>` : ''}
             <h3>${escHtml(art.title)}</h3>
             <div class="article-date">${art.date}</div>
             <div class="article-preview">${escHtml(preview)}</div>
@@ -485,13 +496,14 @@ function renderArticles() {
         });
         // Кнопка удаления
         const delBtn = card.querySelector('.article-delete');
-        delBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            deleteArticle(parseInt(delBtn.dataset.index));
-        });
+        if (delBtn) {
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteArticle(realIdx);
+            });
+        }
         articlesGrid.appendChild(card);
     });
-    if (typeof updateAdminUI === 'function') updateAdminUI();
 }
 
 function escHtml(str) {
@@ -884,9 +896,8 @@ let adminMode = localStorage.getItem('mAdminMode') === 'true';
 function updateAdminUI() {
     if (!adminPanel) return;
     adminPanel.style.display = adminMode ? 'block' : 'none';
-    document.querySelectorAll('.article-card .article-delete').forEach(btn => {
-        btn.classList.toggle('visible', adminMode);
-    });
+    // Перерисовываем статьи — кнопки удаления появляются/исчезают
+    renderArticles();
 }
 
 if (articlesTitle) {
@@ -898,8 +909,6 @@ if (articlesTitle) {
     });
 }
 
-if (adminMode) updateAdminUI();
-
 // ====================================================================
 // ЗАПУСК
 // ====================================================================
@@ -908,6 +917,7 @@ buildFilter();
 buildSearchIndex();
 loadArticles();
 renderArticles();
+if (adminMode) updateAdminUI();
 
 console.log('%c CyberDesacratio ', 'background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 18px; padding: 10px 20px; border-radius: 8px; font-weight: bold;');
 console.log('%c In Cyberspace We Trust ', 'color: #667eea; font-size: 13px;');
