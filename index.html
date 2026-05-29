@@ -11,16 +11,7 @@
     <meta name="author" content="CyberDesacratio">
     <meta name="robots" content="index, follow">
 
-    <!-- Регистрация стабильного Service Worker -->
-    <script>
-        // Блокируем браузерный диалог установки PWA
-        window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); e.stopPropagation(); });
-        // Регистрируем лёгкий SW, который никогда не меняется, чтобы браузер не показывал
-        // «Подтвердите действие» при каждом обновлении
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
+    <!-- Никакого PWA/SW — чистый статический сайт -->
 
     <!-- Favicon -->
     <link rel="icon" href="favicon.ico" sizes="any">
@@ -286,64 +277,10 @@
         <div class="container">
             <div class="articles-header">
                 <h2 class="section-title" id="articlesTitle">📝 <span class="highlight">Статьи</span></h2>
-                <button class="articles-admin-toggle" id="adminToggleBtn" aria-label="Управление статьями">⚙️ Управление</button>
             </div>
             <p class="section-subtitle">
                 Статьи, руководства и заметки по OSINT, пентестингу, программированию и Linux.
             </p>
-
-            <!-- Админ-панель (скрыта, показать кнопкой Управление) -->
-            <div class="admin-panel" id="adminPanel" style="display:none;">
-                <div class="admin-panel-inner">
-                    <div class="admin-header">
-                        <span class="admin-badge">🔐 Админ-панель</span>
-                        <button class="admin-close" id="adminCloseBtn" type="button" aria-label="Закрыть">✕</button>
-                    </div>
-
-                    <div class="admin-form">
-                        <div class="admin-row">
-                            <div class="admin-field">
-                                <label for="adminCategory">Категория</label>
-                                <select id="adminCategory">
-                                    <option value="">— Выберите категорию —</option>
-                                </select>
-                            </div>
-                            <div class="admin-field">
-                                <label for="adminTitle">Название статьи</label>
-                                <input type="text" id="adminTitle" placeholder="Введите название...">
-                            </div>
-                        </div>
-
-                        <div class="admin-field">
-                            <label>Файл с содержимым</label>
-                            <div class="admin-dropzone" id="adminDropzone">
-                                <input type="file" id="adminFileInput" accept=".txt,.html,.htm,.pdf" hidden>
-                                <div class="dropzone-placeholder">
-                                    <span class="dropzone-icon">📄</span>
-                                    <span>Нажми или перетащи файл сюда</span>
-                                    <span class="dropzone-hint">TXT · HTML · PDF · до 10MB</span>
-                                </div>
-                                <div class="dropzone-preview" id="adminFilePreview" style="display:none;">
-                                    <span class="preview-icon">📎</span>
-                                    <span class="preview-name" id="adminFileName"></span>
-                                    <span class="preview-size" id="adminFileSize"></span>
-                                    <button class="preview-remove" id="adminFileRemove" type="button">✕</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="admin-actions">
-                            <button class="admin-btn admin-btn-primary" id="adminSaveBtn" disabled>💾 Опубликовать</button>
-                            <span class="admin-status" id="adminStatus"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Фильтр по категориям -->
-            <div class="article-filters" id="articleFilters" style="display:none;">
-                <button class="article-filter active" data-category="">Все</button>
-            </div>
 
             <!-- Список статей -->
             <div class="articles-grid" id="articlesGrid">

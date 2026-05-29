@@ -448,122 +448,43 @@ if (searchInput) {
 }
 
 // ====================================================================
-// СТАТЬИ
+// СТАТЬЯ: «Графические окружения. DE»
 // ====================================================================
 
 const articlesGrid = document.getElementById('articlesGrid');
 const articlesEmpty = document.getElementById('articlesEmpty');
-const adminCategory = document.getElementById('adminCategory');
-const adminTitle = document.getElementById('adminTitle');
-const adminDropzone = document.getElementById('adminDropzone');
-const adminFileInput = document.getElementById('adminFileInput');
-const adminFilePreview = document.getElementById('adminFilePreview');
-const adminFileName = document.getElementById('adminFileName');
-const adminFileSize = document.getElementById('adminFileSize');
-const adminFileRemove = document.getElementById('adminFileRemove');
-const adminSaveBtn = document.getElementById('adminSaveBtn');
-const adminStatus = document.getElementById('adminStatus');
 const articleFilters = document.getElementById('articleFilters');
-
 let articles = [];
-let pendingFile = null;
-let articlesFilter = '';
 
-// ---- Категории статей из MODULES ----
-function getArticleCategories() {
-    if (typeof MODULES !== 'undefined' && Array.isArray(MODULES)) {
-        return MODULES.map(m => m.title);
-    }
-    return [];
-}
-
-// ---- Инициализация админ-формы ----
-function initAdminForm() {
-    if (!adminCategory) return;
-    const cats = getArticleCategories();
-    adminCategory.innerHTML = '<option value="">— Выберите категорию —</option>';
-    cats.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        adminCategory.appendChild(opt);
-    });
-}
-
-// ---- Загрузить статьи из localStorage ----
-function loadArticles() {
+// ---- Загрузить/создать статью ----
+async function loadArticles() {
     try {
-        // Удаляем старый ключ со статическими статьями, если остался
-        localStorage.removeItem('mStaticArticles');
         const saved = localStorage.getItem('mArticles');
         if (saved) {
             articles = JSON.parse(saved);
-            // Если есть статьи со static-флагом — чистим их (пережиток статической эпохи)
-            articles = articles.filter(a => !a.static);
-            saveArticles();
-        } else {
-            articles = [];
         }
-    } catch(e) {
-        articles = [];
-    }
-}
+    } catch(e) { articles = []; }
 
-// ---- Сохранить статьи ----
-function saveArticles() {
-    try {
-        localStorage.setItem('mArticles', JSON.stringify(articles));
-    } catch(e) {
-        if (e.name === 'QuotaExceededError' || e.code === 22) {
-            while (articles.length > 0) {
-                articles.shift();
-                try {
-                    localStorage.setItem('mArticles', JSON.stringify(articles));
-                    break;
-                } catch(e2) { continue; }
+    // Проверяем, есть ли статья о DE в списке
+    const hasDE = articles.some(a => a.title === 'Графические окружения. DE');
+    if (!hasDE) {
+        try {
+            const resp = await fetch('article-content.html');
+            if (resp.ok) {
+                const html = await resp.text();
+                articles.push({
+                    title: 'Графические окружения. DE',
+                    category: 'Linux',
+                    type: 'HTML',
+                    date: 'мая 2026',
+                    content: html
+                });
+                try { localStorage.setItem('mArticles', JSON.stringify(articles)); } catch(e) {}
             }
+        } catch(e) {
+            console.warn('Не удалось загрузить article-content.html');
         }
     }
-}
-
-// ---- Форматирование даты ----
-function formatDate() {
-    const d = new Date();
-    const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-// ---- Экранирование HTML ----
-function escHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
-
-// ---- Рендер фильтров категорий ----
-function renderArticleFilters() {
-    if (!articleFilters) return;
-    const cats = getArticleCategories();
-    if (cats.length === 0) {
-        articleFilters.style.display = 'none';
-        return;
-    }
-    articleFilters.style.display = 'flex';
-    let html = `<button class="article-filter${articlesFilter === '' ? ' active' : ''}" data-category="">Все</button>`;
-    cats.forEach(c => {
-        const count = articles.filter(a => a.category === c).length;
-        if (count > 0) {
-            html += `<button class="article-filter${articlesFilter === c ? ' active' : ''}" data-category="${escHtml(c)}">${escHtml(c)} (${count})</button>`;
-        }
-    });
-    articleFilters.innerHTML = html;
-    articleFilters.querySelectorAll('.article-filter').forEach(btn => {
-        btn.addEventListener('click', () => {
-            articlesFilter = btn.dataset.category;
-            renderArticleFilters();
-            renderArticles();
-        });
-    });
 }
 
 // ---- Рендер статей ----
@@ -571,29 +492,19 @@ function renderArticles() {
     if (!articlesGrid || !articlesEmpty) return;
     articlesGrid.innerHTML = '';
 
-    let filtered = articles;
-    if (articlesFilter) {
-        filtered = articles.filter(a => a.category === articlesFilter);
-    }
-
-    if (filtered.length === 0) {
+    if (articles.length === 0) {
         articlesEmpty.classList.remove('hidden');
         return;
     }
     articlesEmpty.classList.add('hidden');
 
-    // От новых к старым
-    const sorted = [...filtered].reverse();
-    sorted.forEach((art, displayIdx) => {
-        const realIdx = articles.indexOf(art);
+    articles.forEach((art, idx) => {
         const card = document.createElement('div');
         card.className = 'article-card';
         const preview = (art.content || '').replace(/<[^>]*>/g, '').substring(0, 150);
-        const showDelete = adminMode;
 
         card.innerHTML = `
             <span class="article-type">${escHtml(art.type || 'TXT')}</span>
-            ${showDelete ? `<button class="article-delete visible" data-index="${realIdx}" aria-label="Удалить статью">✕</button>` : ''}
             <h3>${escHtml(art.title)}</h3>
             <div class="article-date">
                 ${art.category ? `<span class="article-category-tag">${escHtml(art.category)}</span>` : ''}
@@ -601,28 +512,16 @@ function renderArticles() {
             </div>
             <div class="article-preview">${escHtml(preview)}</div>
         `;
-        card.addEventListener('click', (e) => {
-            if (e.target.closest('.article-delete')) return;
-            openArticle(realIdx);
-        });
-        const delBtn = card.querySelector('.article-delete');
-        if (delBtn) {
-            delBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteArticle(realIdx);
-            });
-        }
+        card.addEventListener('click', () => openArticle(idx));
         articlesGrid.appendChild(card);
     });
 }
 
-// ---- Удалить статью ----
-function deleteArticle(idx) {
-    if (idx < 0 || idx >= articles.length) return;
-    articles.splice(idx, 1);
-    saveArticles();
-    renderArticles();
-    renderArticleFilters();
+// ---- Экранирование HTML ----
+function escHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 // ---- Открыть статью (модал) ----
@@ -634,15 +533,6 @@ function openArticle(idx) {
     overlay.className = 'modal-overlay active';
     overlay.style.display = 'flex';
 
-    let contentHtml = '';
-    if (art.type === 'PDF') {
-        contentHtml = `<div style="width:100%;height:80vh;border-radius:12px;overflow:hidden;">
-            <iframe src="${art.blobUrl || ''}" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
-        </div>`;
-    } else {
-        contentHtml = `<div class="article-viewer-content">${art.content || ''}</div>`;
-    }
-
     overlay.innerHTML = `
         <div class="modal article-viewer" style="max-width:800px;">
             <div class="article-viewer-header">
@@ -650,7 +540,7 @@ function openArticle(idx) {
                 <button class="modal-close" aria-label="Закрыть">&times;</button>
             </div>
             ${art.category ? `<div style="padding:8px 28px 0;font-size:0.8rem;color:var(--text-muted);">Категория: ${escHtml(art.category)}</div>` : ''}
-            ${contentHtml}
+            <div class="article-viewer-content">${art.content || ''}</div>
         </div>
     `;
 
@@ -675,189 +565,6 @@ function openArticle(idx) {
             document.removeEventListener('keydown', handler);
         }
     });
-}
-
-// ---- Чтение файла и возврат данных ----
-function readArticleFile(file) {
-    return new Promise((resolve, reject) => {
-        const maxSize = 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-            reject(new Error('Файл слишком большой. Максимум 10MB.'));
-            return;
-        }
-        const ext = file.name.split('.').pop().toLowerCase();
-        const reader = new FileReader();
-
-        if (ext === 'pdf') {
-            reader.onload = function(e) {
-                resolve({
-                    type: 'PDF',
-                    content: '',
-                    blobUrl: URL.createObjectURL(file),
-                    base64: e.target.result
-                });
-            };
-            reader.onerror = () => reject(new Error('Ошибка чтения файла'));
-            reader.readAsDataURL(file);
-        } else if (ext === 'html' || ext === 'htm') {
-            reader.onload = function(e) {
-                let content = e.target.result;
-                content = content.replace(/<script[\s\S]*?<\/script>/gi, '');
-                resolve({
-                    type: 'HTML',
-                    content: content
-                });
-            };
-            reader.onerror = () => reject(new Error('Ошибка чтения файла'));
-            reader.readAsText(file, 'UTF-8');
-        } else {
-            // TXT и прочее
-            reader.onload = function(e) {
-                let content = e.target.result;
-                content = content
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
-                content = content.replace(/\n/g, '<br>');
-                resolve({
-                    type: 'TXT',
-                    content: content
-                });
-            };
-            reader.onerror = () => reject(new Error('Ошибка чтения файла'));
-            reader.readAsText(file, 'UTF-8');
-        }
-    });
-}
-
-// ---- Публикация статьи ----
-async function publishArticle() {
-    const category = adminCategory.value;
-    const title = adminTitle.value.trim();
-    if (!category) { setAdminStatus('Выберите категорию', 'error'); return; }
-    if (!title) { setAdminStatus('Введите название', 'error'); return; }
-    if (!pendingFile) { setAdminStatus('Выберите файл', 'error'); return; }
-
-    adminSaveBtn.disabled = true;
-    setAdminStatus('Обработка...', '');
-
-    try {
-        const fileData = await readArticleFile(pendingFile);
-
-        // Если HTML/TXT — используем название из файла, если есть
-        let finalTitle = title;
-        if (fileData.type === 'HTML') {
-            const titleMatch = fileData.content.match(/<title[^>]*>([^<]*)<\/title>/i);
-            if (titleMatch) finalTitle = titleMatch[1].trim();
-        } else if (fileData.type === 'TXT' && !finalTitle) {
-            finalTitle = pendingFile.name.replace(/\.[^/.]+$/, '');
-        }
-
-        articles.push({
-            title: finalTitle,
-            category: category,
-            type: fileData.type,
-            content: fileData.content,
-            blobUrl: fileData.blobUrl || null,
-            base64: fileData.base64 || null,
-            date: formatDate()
-        });
-
-        saveArticles();
-        resetAdminForm();
-        renderArticles();
-        renderArticleFilters();
-        setAdminStatus('✅ Опубликовано!', 'success');
-    } catch (err) {
-        setAdminStatus('❌ ' + err.message, 'error');
-    }
-
-    adminSaveBtn.disabled = false;
-}
-
-function setAdminStatus(msg, cls) {
-    if (!adminStatus) return;
-    adminStatus.textContent = msg;
-    adminStatus.className = 'admin-status' + (cls ? ' ' + cls : '');
-}
-
-function resetAdminForm() {
-    if (adminCategory) adminCategory.value = '';
-    if (adminTitle) adminTitle.value = '';
-    pendingFile = null;
-    if (adminFilePreview) adminFilePreview.style.display = 'none';
-    if (adminFileInput) adminFileInput.value = '';
-    if (adminSaveBtn) adminSaveBtn.disabled = true;
-    setAdminStatus('', '');
-}
-
-// ---- События админ-панели ----
-
-// Выбор файла через кнопку
-if (adminDropzone) {
-    adminDropzone.addEventListener('click', () => {
-        if (adminFileInput) adminFileInput.click();
-    });
-
-    adminDropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        adminDropzone.classList.add('dragover');
-    });
-    adminDropzone.addEventListener('dragleave', () => {
-        adminDropzone.classList.remove('dragover');
-    });
-    adminDropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        adminDropzone.classList.remove('dragover');
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setPendingFile(e.dataTransfer.files[0]);
-        }
-    });
-}
-
-if (adminFileInput) {
-    adminFileInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            setPendingFile(this.files[0]);
-        }
-    });
-}
-
-if (adminFileRemove) {
-    adminFileRemove.addEventListener('click', () => {
-        pendingFile = null;
-        if (adminFilePreview) adminFilePreview.style.display = 'none';
-        if (adminFileInput) adminFileInput.value = '';
-        updateSaveBtn();
-    });
-}
-
-function setPendingFile(file) {
-    pendingFile = file;
-    if (adminFileName) adminFileName.textContent = file.name;
-    if (adminFileSize) {
-        const size = file.size > 1024 * 1024
-            ? (file.size / 1024 / 1024).toFixed(1) + ' MB'
-            : (file.size / 1024).toFixed(0) + ' KB';
-        adminFileSize.textContent = size;
-    }
-    if (adminFilePreview) adminFilePreview.style.display = 'flex';
-    updateSaveBtn();
-}
-
-function updateSaveBtn() {
-    if (!adminSaveBtn) return;
-    const ok = adminCategory.value && adminTitle.value.trim() && pendingFile;
-    adminSaveBtn.disabled = !ok;
-}
-
-if (adminCategory) adminCategory.addEventListener('change', updateSaveBtn);
-if (adminTitle) adminTitle.addEventListener('input', updateSaveBtn);
-
-if (adminSaveBtn) {
-    adminSaveBtn.addEventListener('click', publishArticle);
 }
 
 // ====================================================================
@@ -1067,59 +774,13 @@ if (backToTop) {
     });
 }
 
-// ========== АДМИН-ПАНЕЛЬ (кнопка + двойной клик) ==========
-const articlesTitle = document.getElementById('articlesTitle');
-const adminPanel = document.getElementById('adminPanel');
-const adminToggleBtn = document.getElementById('adminToggleBtn');
-const adminCloseBtn = document.getElementById('adminCloseBtn');
-let adminMode = false; // По умолчанию скрыта
-
-function toggleAdminPanel(show) {
-    adminMode = show !== undefined ? show : !adminMode;
-    if (!adminPanel) return;
-    adminPanel.style.display = adminMode ? 'block' : 'none';
-    if (adminToggleBtn) {
-        adminToggleBtn.textContent = adminMode ? '🔒 Закрыть' : '⚙️ Управление';
-        adminToggleBtn.classList.toggle('active', adminMode);
-    }
-    if (adminMode) initAdminForm();
-    renderArticles();
-    renderArticleFilters();
-}
-
-// Кнопка "Управление"
-if (adminToggleBtn) {
-    adminToggleBtn.addEventListener('click', () => toggleAdminPanel());
-}
-
-// Кнопка "Закрыть" в админке
-if (adminCloseBtn) {
-    adminCloseBtn.addEventListener('click', () => toggleAdminPanel(false));
-}
-
-// Двойной клик по заголовку (на всякий случай)
-if (articlesTitle) {
-    articlesTitle.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        toggleAdminPanel();
-    });
-}
-
 // ====================================================================
 // ЗАПУСК
 // ====================================================================
 renderModules(null);
 buildFilter();
 buildSearchIndex();
-loadArticles();
-renderArticles();
-renderArticleFilters();
-
-// Блокируем PWA-установку (браузерный "подтвердите действие")
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-});
+loadArticles().then(() => renderArticles());
 
 console.log('%c CyberDesacratio ', 'background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 18px; padding: 10px 20px; border-radius: 8px; font-weight: bold;');
 console.log('%c In Cyberspace We Trust ', 'color: #667eea; font-size: 13px;');
