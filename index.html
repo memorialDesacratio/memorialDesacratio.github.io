@@ -367,25 +367,7 @@
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
     </button>
 
-    <script src="data.js?v=4"></script>
-    <script src="script.js?v=4"></script>
-    <script>
-    // Минимальная регистрация стабильного SW (без кэширования)
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(function(reg) {
-            console.log('[SW] registered');
-            reg.addEventListener('updatefound', function() {
-                var worker = reg.installing;
-                worker.addEventListener('statechange', function() {
-                    if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-                        console.log('[SW] updated');
-                    }
-                });
-            });
-        }).catch(function(err) {
-            console.log('[SW] error:', err);
-        });
-    }
-    </script>
+    <script src="data.js?v=5"></script>
+    <script src="script.js?v=5"></script>
 </body>
 </html>

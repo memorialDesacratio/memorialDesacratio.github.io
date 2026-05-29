@@ -4,9 +4,16 @@
  * статьи, прогресс-бар, кнопка наверх, scroll reveal
  */
 
+// ========== УБИТЬ СТАРЫЙ SERVICE WORKER ==========
+if (navigator.serviceWorker) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+        regs.forEach(function(reg) { reg.unregister(); });
+    });
+}
+
 // ========== МИГРАЦИЯ ВЕРСИИ (сброс старого кэша) ==========
 (function() {
-    const CURRENT_VERSION = 4;
+    const CURRENT_VERSION = 5;
     const savedVersion = parseInt(localStorage.getItem('mVersion'), 10);
     if (!savedVersion || savedVersion < CURRENT_VERSION) {
         // При обновлении сайта — чистим старые данные
@@ -465,23 +472,25 @@ async function loadArticles() {
         }
     } catch(e) { articles = []; }
 
-    // Проверяем, есть ли статья о DE в списке
-    const hasDE = articles.some(a => a.title === 'Графические окружения. DE');
-    if (!hasDE) {
-        try {
-            const resp = await fetch('article-content.html?v=4');
-            if (resp.ok) {
-                const html = await resp.text();
-                articles.push({
-                    title: 'Графические окружения. DE',
-                    category: 'Linux',
-                    type: 'HTML',
-                    date: 'мая 2026',
-                    content: html
-                });
-                try { localStorage.setItem('mArticles', JSON.stringify(articles)); } catch(e) {}
-            }
-        } catch(e) {
+    // ВСЕГДА перезагружаем статью о DE (свежая версия)
+    try {
+        const resp = await fetch('article-content.html?t=' + Date.now());
+        if (resp.ok) {
+            const html = await resp.text();
+            // Удаляем старую версию статьи, если есть
+            const idx = articles.findIndex(a => a.title === 'Графические окружения. DE');
+            if (idx >= 0) articles.splice(idx, 1);
+            articles.push({
+                title: 'Графические окружения. DE',
+                category: 'Linux',
+                type: 'HTML',
+                date: 'мая 2026',
+                content: html
+            });
+            // Не сохраняем в localStorage — всегда свежая
+        }
+    } catch(e) {
+        if (!articles.some(a => a.title === 'Графические окружения. DE')) {
             console.warn('Не удалось загрузить article-content.html');
         }
     }
