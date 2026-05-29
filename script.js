@@ -6,7 +6,7 @@
 
 // ========== МИГРАЦИЯ ВЕРСИИ (сброс старого кэша) ==========
 (function() {
-    const CURRENT_VERSION = 3;
+    const CURRENT_VERSION = 4;
     const savedVersion = parseInt(localStorage.getItem('mVersion'), 10);
     if (!savedVersion || savedVersion < CURRENT_VERSION) {
         // При обновлении сайта — чистим старые данные
@@ -469,7 +469,7 @@ async function loadArticles() {
     const hasDE = articles.some(a => a.title === 'Графические окружения. DE');
     if (!hasDE) {
         try {
-            const resp = await fetch('article-content.html');
+            const resp = await fetch('article-content.html?v=4');
             if (resp.ok) {
                 const html = await resp.text();
                 articles.push({
