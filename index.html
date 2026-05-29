@@ -392,7 +392,13 @@
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
     </button>
 
-    <script src="data.js?v=6"></script>
-    <script src="script.js?v=6"></script>
+    <script src="data.js?v=7"></script>
+    <script src="script.js?v=7"></script>
+    <script>
+    // Регистрируем НОВЫЙ SW — заменит старый, очистит кэш
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+    </script>
 </body>
 </html>
